@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+    <title>СпортАренда | Велосипеды, лодки, снаряжение</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --bg: #f7fafc;
+            --text: #1a2c3e;
+            --primary: #1a4a3a;
+            --primary-light: #2d6a4f;
+            --accent: #f9c74f;
+            --accent-hover: #ffda7c;
+            --white: #ffffff;
+            --border: #e2edf2;
+            --gray: #5c6f7e;
+            --danger: #ff4444;
+            --radius: 20px;
+            --shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+        }
+        .main-header {
+            background: linear-gradient(135deg, #0b2b26 0%, var(--primary) 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .logo span {
+            color: var(--accent);
+        }
+        .main-nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover,
+        .nav-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-btn {
+            background: var(--accent);
+            color: #1a2c3e;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .header-btn:hover {
+            background: var(--accent-hover);
+        }
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 0.9rem;
+        }
+        .user-header .user-name {
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .user-header .user-name:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        .logout-btn {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        .login-header-btn {
+            background: var(--accent);
+            color: #1a2c3e;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .login-header-btn:hover {
+            background: var(--accent-hover);
+        }
+        .hero-wrapper {
+            background: linear-gradient(135deg, #0b2b26 0%, #1a4a3a 25%, #2d6a4f 50%, #1a4a3a 75%, #0b2b26 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+            color: white;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .hero {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 0 50px;
+            gap: 30px;
+        }
+        .hero-content {
+            flex: 1;
+            min-width: 280px;
+        }
+        .hero-badge {
+            background: rgba(249, 199, 79, 0.2);
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--accent);
+        }
+        .hero-content h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            color: white;
+        }
+        .hero-content p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 28px;
+            max-width: 500px;
+            color: white;
+        }
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #1a2c3e;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-weight: 700;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .hero-stats {
+            flex: 0 0 350px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 40px;
+            padding: 28px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            transition: transform 0.3s, background 0.3s;
+        }
+        .stat-item:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .stat-item h3 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .stat-item p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 30px 0 20px;
+            display: inline-block;
+            position: relative;
+        }
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 60%;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 4px;
+        }
+        .equipment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 24px;
+            margin: 30px 0;
+        }
+        .equip-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 24px 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.25s;
+            border: 1px solid var(--border);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            height: 340px;
+        }
+        .equip-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.12);
+        }
+        .equip-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 12px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .equip-icon i {
+            font-size: 2.5rem;
+        }
+        .equip-card h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .equip-count {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+            margin: 8px 0;
+        }
+        .equip-desc {
+            color: var(--gray);
+            margin: 8px 0;
+            font-size: 0.85rem;
+            flex-grow: 1;
+        }
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .filter-btn {
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid var(--primary);
+            background: var(--white);
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--white);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin: 20px 0;
+        }
+        .data-table th {
+            background: #f0f7f3;
+            padding: 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .data-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        .status-active {
+            color: var(--primary-light);
+            font-weight: 600;
+        }
+        .status-cancelled {
+            color: var(--danger);
+        }
+        .cat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin: 30px 0;
+        }
+        .cat-item {
+            background: var(--white);
+            padding: 20px 12px;
+            border-radius: var(--radius);
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+            border: 1px solid #dce7ed;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .cat-item:hover {
+            background: #f0f7f3;
+            transform: scale(1.02);
+        }
+        .cat-item i {
+            font-size: 1.8rem;
+            color: var(--primary-light);
+            margin-bottom: 10px;
+        }
+        .cat-item h4 {
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+        .cat-item p {
+            font-size: 0.8rem;
+            color: gray;
+        }
+        .show-more-cats {
+            text-align: center;
+            margin: 8px 0 20px;
+        }
+        .btn-show-more {
+            background: none;
+            border: 1px solid #b7cfc0;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-show-more:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .site-footer {
+            background: linear-gradient(135deg, #0b2b26 0%, var(--primary) 100%);
+            color: white;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: auto;
+        }
+        .footer-subscribe {
+            background: rgba(255,255,255,0.05);
+            border-radius: 40px;
+            padding: 36px 30px;
+            margin: 36px 0 28px;
+            color: white;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+        .subscribe-text h3 {
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+        }
+        .subscribe-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .subscribe-form input {
+            padding: 12px 18px;
+            border-radius: 40px;
+            border: none;
+            width: 240px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .subscribe-form input.error {
+            border: 2px solid var(--danger);
+        }
+        .subscribe-form button {
+            background: var(--accent);
+            border: none;
+            padding: 0 22px;
+            border-radius: 40px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .subscribe-form button:hover {
+            background: var(--accent-hover);
+        }
+        .email-error {
+            color: #ff6b6b;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: none;
+        }
+        .email-error.show {
+            display: block;
+        }
+        .footer-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 30px;
+            margin: 30px 0 10px;
+        }
+        .footer-col {
+            flex: 1;
+            min-width: 130px;
+        }
+        .footer-col h4 {
+            font-weight: 700;
+            margin-bottom: 14px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .footer-col h4:hover {
+            color: var(--accent);
+        }
+        .footer-col ul {
+            list-style: none;
+        }
+        .footer-col li {
+            margin-bottom: 10px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+        .footer-col li:hover {
+            color: var(--accent);
+            font-weight: 500;
+        }
+        .footer-contacts i {
+            margin-right: 5px;
+            color: var(--accent);
+        }
+        .copyright {
+            text-align: center;
+            padding: 10px 0 20px;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.8rem;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(6px);
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--white);
+            border-radius: 32px;
+            padding: 32px;
+            max-width: 550px;
+            width: 90%;
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.3);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-close {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #5a6e7c;
+        }
+        .booking-form {
+            margin-top: 16px;
+        }
+        .booking-form .form-group {
+            margin-bottom: 18px;
+        }
+        .booking-form label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #2d3e4f;
+            font-size: 0.9rem;
+        }
+        .booking-form input,
+        .booking-form textarea,
+        .booking-form select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+        .booking-form input:focus,
+        .booking-form textarea:focus,
+        .booking-form select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .price-summary {
+            background: #f0f7f3;
+            border-radius: 16px;
+            padding: 18px;
+            margin: 18px 0;
+            text-align: center;
+        }
+        .price-summary h3 {
+            font-size: 1.6rem;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1e3a2f;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 500;
+            z-index: 3000;
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
+        }
+        .toast-msg.show {
+            opacity: 1;
+        }
+        .toast-msg.error {
+            background: var(--danger);
+        }
+        .info-page {
+            padding: 30px 0;
+        }
+        .info-page h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .info-page p {
+            margin-bottom: 14px;
+            color: #2d3e4f;
+        }
+        .info-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 22px;
+            margin-bottom: 18px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.03);
+        }
+        .info-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        .faq-item {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 14px;
+            border-left: 4px solid var(--accent);
+        }
+        .faq-item h4 {
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .blog-card {
+            background: var(--white);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+        }
+        .blog-card-img {
+            height: 140px;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+        }
+        .blog-card-body {
+            padding: 18px;
+        }
+        .blog-card-body h4 {
+            font-size: 1.2rem;
+            margin-bottom: 6px;
+        }
+        .admin-panel {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin: 18px 0;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .admin-panel h3 {
+            margin-bottom: 16px;
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+        .cookie-consent {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--primary);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            z-index: 9999;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+        }
+        .cookie-consent.hidden {
+            display: none;
+        }
+        .qr-container {
+            text-align: center;
+            padding: 20px;
+        }
+        #qrcode {
+            display: inline-block;
+            padding: 15px;
+            background: white;
+            border-radius: 16px;
+        }
+        .auth-page-wrapper {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
+        }
+        .auth-card {
+            background: var(--white);
+            border-radius: 28px;
+            padding: 36px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 440px;
+        }
+        .auth-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        .auth-card .auth-subtitle {
+            color: var(--gray);
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+        .auth-card .form-group {
+            margin-bottom: 18px;
+        }
+        .auth-card label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #2d3e4f;
+            font-size: 0.9rem;
+        }
+        .auth-card input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+        .auth-card input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .auth-card .auth-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 40px;
+            background: var(--accent);
+            color: #1a2c3e;
+            font-weight: 700;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+        .auth-card .auth-btn:hover {
+            background: var(--accent-hover);
+        }
+        .auth-card .auth-switch {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        .auth-card .auth-switch span {
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .auth-card .auth-switch span:hover {
+            text-decoration: underline;
+        }
+        .auth-card .auth-error {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            display: none;
+        }
+        .auth-card .auth-error.show {
+            display: block;
+        }
+        .agree-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: var(--gray);
+            cursor: pointer;
+        }
+        .agree-label input {
+            width: auto !important;
+            margin-top: 3px;
+        }
+        .agree-label a {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+        main {
+            flex: 1 0 auto;
+        }
+        @media (max-width: 780px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+            .hero-stats {
+                flex: 1 1 100%;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .equipment-grid {
+                grid-template-columns: 1fr;
+            }
+            .main-nav {
+                gap: 6px;
+            }
+            .nav-link {
+                font-size: 0.8rem;
+                padding: 6px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="container">
+            <div class="header-top">
+                <div class="logo" onclick="navigateTo('home')">Спорт<span>Аренда</span></div>
+                <nav class="main-nav">
+                    <a class="nav-link active" onclick="navigateTo('home')">Главная</a>
+                    <a class="nav-link" onclick="navigateTo('catalog')">Каталог</a>
+                    <a class="nav-link" onclick="navigateTo('history')">Мои заказы</a>
+                    <a class="nav-link" onclick="navigateTo('about')">О нас</a>
+                    <a class="nav-link" onclick="navigateTo('support')">Поддержка</a>
+                    <a class="nav-link" onclick="navigateTo('blog')">Блог</a>
+                </nav>
+                <div class="header-actions" id="headerActions">
+                    <!-- Динамически обновляется -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="mainContent"></main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-subscribe">
+                <div class="subscribe-text">
+                    <h3><i class="far fa-envelope"></i> Подписаться на рассылку</h3>
+                    <p>Акции, новые поступления и события</p>
+                </div>
+                <div>
+                    <div class="subscribe-form">
+                        <input type="email" id="subsEmail" placeholder="Ваш e-mail">
+                        <button id="subscribeBtn">Подписаться</button>
+                    </div>
+                    <div class="email-error" id="emailError">Введите корректный email адрес</div>
+                </div>
+            </div>
+            <div class="footer-info">
+                <div class="footer-col">
+                    <h4 onclick="navigateTo('support')">Поддержка</h4>
+                    <ul>
+                        <li onclick="navigateTo('support')">FAQ и помощь</li>
+                        <li onclick="navigateTo('support')">Условия возврата</li>
+                        <li onclick="navigateTo('support')">Онлайн запись</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 onclick="navigateTo('about')">О нас</h4>
+                    <ul>
+                        <li onclick="navigateTo('about')">Наш коллектив</li>
+                        <li onclick="navigateTo('about')">Расписание</li>
+                        <li onclick="navigateTo('about')">Пункты проката</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 onclick="navigateTo('blog')">Блог</h4>
+                    <ul>
+                        <li onclick="navigateTo('blog')">Новости спорта</li>
+                        <li onclick="navigateTo('blog')">Советы по выбору</li>
+                        <li onclick="navigateTo('blog')">Маршруты</li>
+                    </ul>
+                </div>
+                <div class="footer-col footer-contacts">
+                    <h4 onclick="openModal('contactsModal')" style="cursor:pointer;">Контакты</h4>
+                    <p onclick="openModal('contactsModal')" style="cursor:pointer;">
+                        <i class="fas fa-phone"></i> +7 (800) 000-00-00<br>
+                        <i class="fas fa-envelope"></i> sport@arenda.ru<br>
+                        <i class="fab fa-instagram"></i> @sport_arena
+                    </p>
+                </div>
+            </div>
+            <div class="copyright">
+                © 2026 СпортАренда — прокат велосипедов, лодок и снаряжения в Москве и России.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Модальные окна -->
+    <div id="contactsModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('contactsModal')">&times;</button>
+            <h2>Свяжитесь с нами</h2>
+            <p><i class="fas fa-phone-alt"></i> +7 (800) 000-00-00</p>
+            <p><i class="fas fa-envelope"></i> sport@arenda.ru</p>
+            <p><i class="fab fa-instagram"></i> @sport_arena</p>
+            <p><i class="fas fa-map-marker-alt"></i> Москва, Лужники, 24с1</p>
+        </div>
+    </div>
+
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('bookingModal')">&times;</button>
+            <h2 id="bookingItemName"></h2>
+            <div class="booking-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Дата начала:</label>
+                        <input type="date" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Дата окончания:</label>
+                        <input type="date" id="endDate" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ваше имя:</label>
+                    <input type="text" id="customerName" placeholder="Иван Петров" required>
+                </div>
+                <div class="form-group">
+                    <label>Телефон:</label>
+                    <input type="tel" id="customerPhone" placeholder="+7 (___) ___-__-__" required maxlength="18">
+                </div>
+                <div class="form-group">
+                    <label>Комментарий:</label>
+                    <textarea id="comment" rows="3" placeholder="Дополнительные пожелания"></textarea>
+                </div>
+                <div class="price-summary">
+                    <p>Стоимость аренды:</p>
+                    <h3 id="totalPrice">0 ₽</h3>
+                    <p style="font-size:0.85rem; color:#666;">за <span id="daysCount">0</span> дней</p>
+                </div>
+                <button class="btn-primary" id="submitBookingBtn" style="width:100%;">Перейти к оплате</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="qrModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('qrModal')">&times;</button>
+            <h2>Оплата по QR-коду</h2>
+            <div class="qr-container">
+                <p style="margin-bottom: 16px;">Сумма к оплате: <strong id="qrAmount">0 ₽</strong></p>
+                <div id="qrcode"></div>
+                <p style="margin-top: 12px; color: var(--gray);">Наведите камеру телефона на QR-код</p>
+                <button class="btn-primary" id="simulatePaymentBtn" style="margin-top: 16px;">Оплатить (эмуляция)</button>
+                <p id="paymentStatus" style="margin-top: 12px; font-weight: 600;"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="blogModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('blogModal')">&times;</button>
+            <div id="blogModalContent"></div>
+        </div>
+    </div>
+
+    <div id="toastMsg" class="toast-msg"></div>
+
+    <div id="cookieConsent" class="cookie-consent">
+        <p>🍪 Мы используем cookie-файлы для улучшения работы сайта. Продолжая использовать сайт, вы соглашаетесь с политикой конфиденциальности.</p>
+        <button class="btn-primary" onclick="acceptCookies()" style="white-space:nowrap;">Принять</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script>
+        // ============ БАЗА ДАННЫХ ============
+        const DB_KEY = 'sportArenaDB_v6';
+        const USERS_KEY = 'sportArenaUsers_v3';
+        const CURRENT_USER_KEY = 'sportArenaCurrentUser_v3';
+        const COOKIES_ACCEPTED_KEY = 'sportArenaCookiesAccepted';
+
+        const availableIcons = [
+            { class: 'fa-bicycle', label: 'Велосипед' },{ class: 'fa-mountain', label: 'Гора' },{ class: 'fa-bolt', label: 'Молния' },{ class: 'fa-ship', label: 'Корабль' },{ class: 'fa-water', label: 'Вода' },{ class: 'fa-campground', label: 'Палатка' },{ class: 'fa-hiking', label: 'Поход' },{ class: 'fa-bed', label: 'Кровать' },{ class: 'fa-tshirt', label: 'Футболка' },{ class: 'fa-shoe-prints', label: 'Обувь' },{ class: 'fa-dumbbell', label: 'Гантель' },{ class: 'fa-yoga', label: 'Йога' },{ class: 'fa-snowboarding', label: 'Сноуборд' },{ class: 'fa-skiing', label: 'Лыжи' },{ class: 'fa-child', label: 'Ребёнок' },{ class: 'fa-shield-alt', label: 'Щит' },{ class: 'fa-box', label: 'Коробка' },{ class: 'fa-swimmer', label: 'Пловец' },{ class: 'fa-fish', label: 'Рыба' },{ class: 'fa-fire', label: 'Огонь' },{ class: 'fa-utensils', label: 'Посуда' },{ class: 'fa-glasses', label: 'Очки' },{ class: 'fa-skating', label: 'Коньки' },{ class: 'fa-skateboard', label: 'Скейт' },{ class: 'fa-table-tennis', label: 'Теннис' },{ class: 'fa-feather-alt', label: 'Бадминтон' },{ class: 'fa-umbrella-beach', label: 'Пляж' },{ class: 'fa-weight-hanging', label: 'Гиря' },
+        ];
+
+        function getDefaultDB() {
+            return {
+                inventory: [
+                    { id: 1, name: "Горный велосипед Merida", category: "bikes", price: 1100, desc: "24 скорости, дисковые тормоза", icon: "fa-mountain", total: 15, available: 12 },{ id: 2, name: "BMX Stunt Pro", category: "bikes", price: 700, desc: "Прочный 20 дюймов, стальная рама", icon: "fa-bicycle", total: 10, available: 8 },{ id: 3, name: "Городской велосипед", category: "bikes", price: 500, desc: "Корзина, 7 скоростей, удобное седло", icon: "fa-bicycle", total: 20, available: 18 },{ id: 4, name: "Шоссейный велосипед", category: "bikes", price: 900, desc: "Карбоновая вилка, 18 скоростей", icon: "fa-bicycle", total: 8, available: 6 },{ id: 5, name: "Электро-велосипед", category: "bikes", price: 1500, desc: "Запас хода 50 км, мотор 250W", icon: "fa-bolt", total: 5, available: 4 },{ id: 6, name: "Байдарка двухместная", category: "boats", price: 1200, desc: "Устойчивая, вёсла в комплекте", icon: "fa-ship", total: 8, available: 6 },{ id: 7, name: "Байдарка одноместная", category: "boats", price: 900, desc: "Лёгкая, маневренная", icon: "fa-ship", total: 10, available: 8 },{ id: 8, name: "Каяк надувной", category: "boats", price: 1300, desc: "Спинка с регулировкой", icon: "fa-water", total: 5, available: 4 },{ id: 9, name: "SUP 10'6\"", category: "sup", price: 900, desc: "Широкий, весло и насос в компл.", icon: "fa-water", total: 12, available: 10 },{ id: 10, name: "SUP туристический", category: "sup", price: 1100, desc: "Ремни для багажа, усиленный", icon: "fa-water", total: 6, available: 5 },{ id: 11, name: "Палатка 2-местная", category: "trekking", price: 700, desc: "Водостойкая, лёгкая, тамбур", icon: "fa-campground", total: 25, available: 22 },{ id: 12, name: "Рюкзак 60L", category: "trekking", price: 450, desc: "Анатомическая спинка, каркас", icon: "fa-hiking", total: 15, available: 13 },{ id: 13, name: "Спальный мешок", category: "trekking", price: 400, desc: "Комфорт +5°C, компрессионный", icon: "fa-bed", total: 20, available: 18 },{ id: 14, name: "Гидрокостюм 3/2 мм", category: "wetsuit", price: 600, desc: "Короткие рукава, неопрен", icon: "fa-tshirt", total: 30, available: 28 },{ id: 15, name: "Гидрокостюм 5 мм", category: "wetsuit", price: 850, desc: "Полный, термошвы, для хол. воды", icon: "fa-tshirt", total: 15, available: 13 },{ id: 16, name: "Обвязка+каска", category: "climbing", price: 800, desc: "Регулируемая обвязка, каска Petzl", icon: "fa-mountain", total: 10, available: 8 },{ id: 17, name: "Скальные туфли", category: "climbing", price: 550, desc: "Размеры 36-45, липкая резина", icon: "fa-shoe-prints", total: 20, available: 18 },{ id: 18, name: "Гантели разборные 2-10 кг", category: "fitness", price: 350, desc: "Регулировка веса, хромированный гриф", icon: "fa-dumbbell", total: 15, available: 12 },{ id: 19, name: "Коврик для йоги 6 мм", category: "fitness", price: 200, desc: "Нескользящий, лёгкий, чехол", icon: "fa-yoga", total: 25, available: 23 },{ id: 20, name: "Гиря 16 кг", category: "fitness", price: 400, desc: "Чугунная, прорезиненная ручка", icon: "fa-dumbbell", total: 10, available: 8 },{ id: 21, name: "Сноуборд + ботинки", category: "winter", price: 1100, desc: "Ростовка 150-165, крепления Burton", icon: "fa-snowboarding", total: 10, available: 8 },{ id: 22, name: "Горные лыжи", category: "winter", price: 1200, desc: "Карвинговые, с палками", icon: "fa-skiing", total: 8, available: 6 },{ id: 23, name: "Детский велосипед 16\"", category: "kids", price: 450, desc: "С доп. колёсами, звонок", icon: "fa-bicycle", total: 12, available: 10 },{ id: 24, name: "Защитный комплект детский", category: "kids", price: 250, desc: "Шлем, наколенники, налокотники", icon: "fa-shield-alt", total: 15, available: 13 }
+                ],
+                bookings: []
+            };
+        }
+
+        function getDB() { let db = localStorage.getItem(DB_KEY); if (!db) { db = getDefaultDB(); localStorage.setItem(DB_KEY, JSON.stringify(db)); return db; } return JSON.parse(db); }
+        function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+        function getInventory() { return getDB().inventory; }
+        function getBookings() { return getDB().bookings; }
+
+        function addBooking(booking) { const db = getDB(); booking.id = Date.now(); booking.status = 'active'; booking.createdAt = new Date().toISOString(); db.bookings.unshift(booking); const item = db.inventory.find(i => i.id === booking.itemId); if (item && item.available > 0) item.available--; saveDB(db); return booking; }
+        function cancelBooking(bookingId) { const db = getDB(); const booking = db.bookings.find(b => b.id === bookingId); if (booking && booking.status === 'active') { booking.status = 'cancelled'; const item = db.inventory.find(i => i.id === booking.itemId); if (item) item.available++; saveDB(db); return true; } return false; }
+        function addInventoryItem(item) { const db = getDB(); item.id = db.inventory.length > 0 ? Math.max(...db.inventory.map(i => i.id)) + 1 : 1; item.available = item.total || 1; if (!item.icon) item.icon = 'fa-box'; db.inventory.push(item); saveDB(db); }
+        function deleteInventoryItem(id) { const db = getDB(); db.inventory = db.inventory.filter(i => i.id !== id); saveDB(db); }
+
+        function getUsers() { let users = localStorage.getItem(USERS_KEY); return users ? JSON.parse(users) : []; }
+        function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+        function registerUser(name, phone, password) { const users = getUsers(); if (users.find(u => u.phone === phone)) return { success: false, message: 'Этот номер телефона уже зарегистрирован' }; const newUser = { id: Date.now(), name, phone, password, createdAt: new Date().toISOString() }; users.push(newUser); saveUsers(users); localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser)); return { success: true, user: newUser }; }
+        function loginUser(phone, password) { const users = getUsers(); const user = users.find(u => u.phone === phone && u.password === password); if (user) { localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user)); return { success: true, user }; } return { success: false, message: 'Неверный номер телефона или пароль' }; }
+        function getCurrentUser() { const user = localStorage.getItem(CURRENT_USER_KEY); return user ? JSON.parse(user) : null; }
+        function logoutUser() { localStorage.removeItem(CURRENT_USER_KEY); }
+
+        function acceptCookies() { localStorage.setItem(COOKIES_ACCEPTED_KEY, 'true'); document.getElementById('cookieConsent').classList.add('hidden'); showToast('🍪 Спасибо! Cookie-файлы приняты.'); }
+        function isCookiesAccepted() { return localStorage.getItem(COOKIES_ACCEPTED_KEY) === 'true'; }
+
+        const categories = [
+            { key: 'all', name: 'Все', icon: 'fa-globe' },{ key: 'bikes', name: 'Велосипеды', icon: 'fa-bicycle' },{ key: 'boats', name: 'Лодки', icon: 'fa-ship' },{ key: 'sup', name: 'SUP-борды', icon: 'fa-water' },{ key: 'trekking', name: 'Туризм', icon: 'fa-campground' },{ key: 'wetsuit', name: 'Гидрокостюмы', icon: 'fa-tshirt' },{ key: 'climbing', name: 'Скалолазание', icon: 'fa-mountain' },{ key: 'fitness', name: 'Фитнес', icon: 'fa-dumbbell' },{ key: 'winter', name: 'Зимний спорт', icon: 'fa-snowboarding' },{ key: 'kids', name: 'Детское', icon: 'fa-child' }
+        ];
+
+        const mainInventory = [
+            { name: "Велосипеды", icon: "fas fa-bicycle", count: "57+", desc: "Горные, шоссейные, BMX", price: "от 500₽", key: "bikes" },{ name: "Лодки и байдарки", icon: "fas fa-ship", count: "23", desc: "Одноместные, каяки", price: "от 900₽", key: "boats" },{ name: "SUP-борды", icon: "fas fa-water", count: "18", desc: "Надувные доски", price: "от 900₽", key: "sup" },{ name: "Туризм", icon: "fas fa-campground", count: "60", desc: "Палатки, спальники, рюкзаки", price: "от 400₽", key: "trekking" },{ name: "Гидрокостюмы", icon: "fas fa-tshirt", count: "45", desc: "3/5 мм неопрен", price: "от 600₽", key: "wetsuit" },{ name: "Скалолазание", icon: "fas fa-mountain", count: "30", desc: "Обвязки, каски, верёвки", price: "от 550₽", key: "climbing" }
+        ];
+
+const blogArticles = [
+    { id: 1, title: "Топ-5 горных велосипедов 2026", icon: "fa-bicycle", date: "15 мая 2026", excerpt: "Сравнили модели Merida, Trek и Cannondale. Какой выбрать для пересечённой местности?", content: "После тщательного тестирования мы выбрали лучшие горные велосипеды 2026 года. Лидером стал Merida Big Nine — отличная геометрия рамы, надёжные дисковые тормоза Shimano и вилка RockShox. На втором месте Trek Marlin 7 — легендарная надёжность и комфорт. Cannondale Trail занял третье место благодаря карбоновой раме и малому весу. Для новичков рекомендуем Stels Navigator — бюджетный, но качественный вариант. И замыкает пятёрку Giant Talon — универсальный велосипед для города и леса." },
+    { id: 2, title: "Байдарочный маршрут по Вуоксе", icon: "fa-water", date: "3 июня 2026", excerpt: "Полный гайд по трёхдневному сплаву с семьёй. Где ночевать и что взять с собой.", content: "Маршрут по реке Вуокса — идеальный вариант для семейного сплава. Стартуем от посёлка Лосево, финишируем через 45 км в Приозерске. На маршруте есть оборудованные стоянки с костровищами. Обязательно возьмите с собой: палатку с тентом, спальники с температурой комфорта +5°C, газовую горелку, репелленты и дождевики. Уровень воды в июне комфортный, пороги проходимы даже для новичков. Наша команда арендует байдарки «Таймень-2» — они устойчивы и вместительны." },
+    { id: 3, title: "Как выбрать гантели для дома", icon: "fa-dumbbell", date: "20 мая 2026", excerpt: "Разборные или фиксированные? Сравнение весов и материалов для фитнеса дома.", content: "Для домашних тренировок оптимальны разборные гантели с набором блинов от 2.5 до 10 кг. Они занимают мало места и позволяют прогрессировать в нагрузке. Виниловые гантели подойдут для аэробики, а чугунные — для силовых тренировок. Обратите внимание на гриф: диаметр 25 мм подходит для стандартных блинов. В нашем прокате есть комплекты с блинами 2.5, 5 и 10 кг — идеально для начала." }
+];
+
+        let currentPage = 'home';
+        let currentBookingItem = null;
+        let currentFilter = 'all';
+        let expandedCats = false;
+        let pendingBookingData = null;
+
+        function updateHeader() {
+            const headerActions = document.getElementById('headerActions');
+            const currentUser = getCurrentUser();
+            if (currentUser) {
+                headerActions.innerHTML = `<button class="header-btn" onclick="navigateTo('admin')" title="Админ-панель"><i class="fas fa-cog"></i> Админ</button><div class="user-header"><span class="user-name" onclick="navigateTo('history')"><i class="fas fa-user-circle"></i> ${currentUser.name}</span><button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Выйти</button></div>`;
+            } else {
+                headerActions.innerHTML = `<button class="header-btn" onclick="navigateTo('admin')" title="Админ-панель"><i class="fas fa-cog"></i> Админ</button><button class="login-header-btn" onclick="navigateTo('auth')"><i class="fas fa-sign-in-alt"></i> Войти</button>`;
+            }
+        }
+
+        function handleLogout() { logoutUser(); updateHeader(); showToast('Вы вышли из аккаунта'); navigateTo('home'); }
+
+        function navigateTo(page) {
+            currentPage = page;
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            const content = document.getElementById('mainContent');
+            const navLinks = document.querySelectorAll('.nav-link');
+            updateHeader();
+            switch (page) {
+                case 'home': content.innerHTML = getHomePage(); if (navLinks[0]) navLinks[0].classList.add('active'); break;
+                case 'catalog': content.innerHTML = getCatalogPage(); if (navLinks[1]) navLinks[1].classList.add('active'); break;
+                case 'history': content.innerHTML = getHistoryPage(); if (navLinks[2]) navLinks[2].classList.add('active'); break;
+                case 'about': content.innerHTML = getAboutPage(); if (navLinks[3]) navLinks[3].classList.add('active'); break;
+                case 'support': content.innerHTML = getSupportPage(); if (navLinks[4]) navLinks[4].classList.add('active'); break;
+                case 'blog': content.innerHTML = getBlogPage(); if (navLinks[5]) navLinks[5].classList.add('active'); break;
+                case 'auth': content.innerHTML = getAuthPage(); break;
+                case 'privacy': content.innerHTML = getPrivacyPage(); break;
+                case 'admin': content.innerHTML = getAdminPage(); break;
+            }
+            window.scrollTo(0, 0);
+            if (page === 'home') { setTimeout(initHomeHandlers, 150); setTimeout(animateCounters, 300); }
+            if (page === 'catalog') { currentFilter = 'all'; setTimeout(() => renderCatalog(currentFilter), 150); }
+            if (page === 'auth') setTimeout(initAuthHandlers, 150);
+            if (page === 'admin') setTimeout(initAdminHandlers, 150);
+            if (page === 'blog') setTimeout(initBlogHandlers, 150);
+            if (page === 'history') setTimeout(initHistoryHandlers, 150);
+        }
+
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-item h3');
+            counters.forEach(counter => {
+                const target = parseInt(counter.textContent);
+                if (isNaN(target)) return;
+                let current = 0;
+                const increment = target / 50;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) { counter.textContent = target + '+'; clearInterval(timer); }
+                    else { counter.textContent = Math.floor(current) + '+'; }
+                }, 30);
+            });
+        }
+
+        function getHomePage() {
+            return `<div class="hero-wrapper"><div class="container"><div class="hero"><div class="hero-content"><div class="hero-badge"><i class="fas fa-bicycle"></i> Активный отдых без границ</div><h1>Аренда снаряжения для любых приключений</h1><p>Велосипеды, байдарки, горное снаряжение и полный комплект для активного туризма.</p><div class="btn-group"><button class="btn-primary" onclick="navigateTo('catalog')"><i class="fas fa-list"></i> Каталог</button></div></div><div class="hero-stats"><div class="stats-grid"><div class="stat-item"><h3>120+</h3><p>ед. техники</p></div><div class="stat-item"><h3>98%</h3><p>довольных клиентов</p></div><div class="stat-item"><h3>24/7</h3><p>поддержка</p></div><div class="stat-item"><h3>5 звёзд</h3><p>на картах</p></div></div></div></div></div></div><div class="container" style="padding-top:30px;"><div class="section-title">🏕️ Топ-снаряжение для активного сезона</div><p style="margin-bottom:16px;color:#2c5a47;">Выберите инвентарь — от лёгких прогулок до экстремальных маршрутов</p><div class="equipment-grid" id="inventoryList">${mainInventory.map(item => `<div class="equip-card" data-category-key="${item.key}"><div class="equip-icon"><i class="${item.icon}"></i></div><h3>${item.name}</h3><div class="equip-count">${item.count}</div><div class="equip-desc">${item.desc}</div><div style="font-weight:700;color:#2d6a4f;">${item.price}</div></div>`).join('')}</div><div class="section-title">🧭 Каталог по видам спорта</div><div class="cat-grid" id="categoryGrid">${categories.slice(1,7).map(cat => `<div class="cat-item" data-cat-key="${cat.key}"><i class="fas ${cat.icon}"></i><h4>${cat.name}</h4><p>Выбрать</p></div>`).join('')}</div><div class="show-more-cats"><button class="btn-show-more" id="toggleMoreCats" onclick="toggleCategories()">Показать ещё категории</button></div></div>`;
+        }
+
+        function getCatalogPage() { return `<div class="container" style="padding:30px 0;"><h2 style="font-size:2rem;margin-bottom:20px;">📦 Каталог снаряжения</h2><div class="filter-bar" id="filterBar">${categories.map(cat => `<button class="filter-btn ${cat.key==='all'?'active':''}" data-filter="${cat.key}" onclick="renderCatalog('${cat.key}')"><i class="fas ${cat.icon}"></i> ${cat.name}</button>`).join('')}</div><div class="equipment-grid" id="catalogGrid"></div></div>`; }
+
+        function renderCatalog(filterKey) { currentFilter = filterKey; const inventory = getInventory(); const filtered = filterKey === 'all' ? inventory : inventory.filter(i => i.category === filterKey); document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === filterKey)); const grid = document.getElementById('catalogGrid'); if (!grid) return; grid.innerHTML = filtered.map(item => `<div class="equip-card" style="height:340px;"><div class="equip-icon"><i class="fas ${item.icon||'fa-box'}"></i></div><h3>${item.name}</h3><div class="equip-desc">${item.desc}</div><div class="equip-count" style="font-size:1.4rem;">${item.price} ₽/день</div><p style="color:#666;font-size:0.85rem;">Доступно: ${item.available} из ${item.total}</p><button class="btn-primary rent-btn" data-id="${item.id}" ${item.available===0?'disabled style="opacity:0.5;cursor:not-allowed;"':''}>${item.available===0?'Нет в наличии':'Арендовать'}</button></div>`).join(''); document.querySelectorAll('.rent-btn').forEach(btn => { if (!btn.disabled) btn.addEventListener('click', function(e) { e.stopPropagation(); e.preventDefault(); openBooking(parseInt(this.dataset.id)); }); }); }
+
+        function getHistoryPage() { const bookings = getBookings(); if (bookings.length === 0) return `<div class="container" style="padding:60px 0;text-align:center;"><i class="fas fa-clipboard-list" style="font-size:4rem;color:#ccc;"></i><h2 style="margin:20px 0;">Нет бронирований</h2><p style="margin-bottom:20px;">Вы ещё ничего не забронировали</p><button class="btn-primary" onclick="navigateTo('catalog')">Перейти в каталог</button></div>`; return `<div class="container" style="padding:30px 0;"><h2>📋 История бронирований</h2><table class="data-table"><thead><tr><th>Товар</th><th>Клиент</th><th>Телефон</th><th>Дата начала</th><th>Дата оконч.</th><th>Дней</th><th>Сумма</th><th>Статус</th><th></th></tr></thead><tbody>${bookings.map(b => `<tr><td><strong>${b.itemName}</strong></td><td>${b.customerName}</td><td>${b.customerPhone}</td><td>${b.startDate}</td><td>${b.endDate}</td><td>${b.days}</td><td>${b.totalPrice} ₽</td><td><span class="status-${b.status}">${b.status==='active'?'Активно':b.status==='cancelled'?'Отменено':'Завершено'}</span></td><td>${b.status==='active'?`<button class="btn-danger cancel-booking-btn" data-id="${b.id}">Отменить</button>`:'-'}</td></tr>`).join('')}</tbody></table></div>`; }
+
+        function getAboutPage() { return `<div class="container info-page"><h2>О нас</h2><p style="font-size:1.1rem;margin-bottom:30px;">СпортАренда — команда профессионалов, влюблённых в активный образ жизни.</p><div class="info-card"><h3><i class="fas fa-users"></i> Наш коллектив</h3><p>Нас 25 человек: от инструкторов по водным видам до механиков велосипедов.</p></div><div class="info-card"><h3><i class="fas fa-clock"></i> Расписание работы</h3><p><strong>Пункты проката:</strong> ежедневно с 8:00 до 22:00</p></div><div class="info-card"><h3><i class="fas fa-map-marker-alt"></i> Пункты проката</h3><p><strong>Москва:</strong> ул. Лужники, 24, стр. 1</p></div></div>`; }
+
+        function getSupportPage() { return `<div class="container info-page"><h2>Поддержка</h2><p style="font-size:1.1rem;margin-bottom:30px;">Мы всегда рядом, чтобы помочь вам.</p><div class="info-card"><h3><i class="fas fa-question-circle"></i> Часто задаваемые вопросы</h3><div class="faq-item"><h4>Как забронировать?</h4><p>Выберите товар в каталоге, заполните форму и оплатите.</p></div><div class="faq-item"><h4>Какие документы нужны?</h4><p>Паспорт или водительское удостоверение.</p></div></div></div>`; }
+
+        function getBlogPage() { return `<div class="container info-page"><h2>Блог</h2><p style="font-size:1.1rem;margin-bottom:30px;">Новости, советы и лучшие маршруты.</p><div class="blog-grid">${blogArticles.map(article => `<div class="blog-card" data-article-id="${article.id}"><div class="blog-card-img"><i class="fas ${article.icon}"></i></div><div class="blog-card-body"><h4>${article.title}</h4><p>${article.excerpt}</p><p style="color:#6b7f8f;font-size:0.85rem;">${article.date}</p></div></div>`).join('')}</div></div>`; }
+
+        function getAuthPage() {
+            return `<div class="auth-page-wrapper"><div class="auth-card" id="loginForm"><h2>Вход</h2><p class="auth-subtitle">Войдите в свой аккаунт для управления заказами</p><div class="form-group"><label>Номер телефона:</label><input type="tel" id="loginPhone" placeholder="+7 (___) ___-__-__" maxlength="18"></div><div class="form-group"><label>Пароль:</label><input type="password" id="loginPassword" placeholder="Введите пароль"></div><p class="auth-error" id="loginError"></p><button class="auth-btn" id="loginBtn">Войти</button><p class="auth-switch">Нет аккаунта? <span onclick="toggleAuthForm()">Зарегистрироваться</span></p></div><div class="auth-card" id="registerForm" style="display:none;"><h2>Регистрация</h2><p class="auth-subtitle">Создайте аккаунт для бронирования снаряжения</p><div class="form-group"><label>Ваше имя:</label><input type="text" id="regName" placeholder="Иван Иванов"></div><div class="form-group"><label>Номер телефона:</label><input type="tel" id="regPhone" placeholder="+7 (___) ___-__-__" maxlength="18"></div><div class="form-group"><label>Придумайте пароль:</label><input type="password" id="regPassword" placeholder="Минимум 4 символа"></div><div class="form-group"><label class="agree-label"><input type="checkbox" id="agreeCheckbox"> Я согласен на обработку <span style="color:var(--primary);cursor:pointer;text-decoration:underline;" onclick="navigateTo('privacy')">персональных данных</span></label></div><p class="auth-error" id="regError"></p><button class="auth-btn" id="registerBtn">Зарегистрироваться</button><p class="auth-switch">Уже есть аккаунт? <span onclick="toggleAuthForm()">Войти</span></p></div></div>`;
+        }
+
+        function getPrivacyPage() { return `<div class="container info-page"><h2>Политика конфиденциальности</h2><div class="info-card"><h3>1. Сбор данных</h3><p>Мы собираем только необходимые данные: имя, телефон, email.</p><h3>2. Хранение данных</h3><p>Все данные хранятся в локальном хранилище браузера (localStorage).</p><h3>3. Cookie-файлы</h3><p>Мы используем cookie-файлы для сохранения настроек.</p></div><h2 style="margin-top:40px;">Обработка персональных данных</h2><div class="info-card"><h3>1. Какие данные мы собираем</h3><p>При регистрации: имя, номер телефона. При бронировании: имя, телефон, комментарий. При подписке: email.</p><h3>2. Цели обработки</h3><p>Данные используются для оформления заказов и связи с вами.</p><h3>3. Хранение</h3><p>Данные хранятся в localStorage и не передаются на сервер.</p><h3>4. Согласие</h3><p>Используя сайт, вы даёте согласие на обработку данных по ФЗ-152.</p></div></div>`; }
+
+        function getAdminPage() { const inventory = getInventory(); const bookings = getBookings(); const iconOptions = availableIcons.map(ic => `<option value="${ic.class}">${ic.label} (${ic.class})</option>`).join(''); return `<div class="container" style="padding:30px 0;"><h2>⚙️ Админ-панель</h2><div class="admin-panel"><h3><i class="fas fa-plus-circle"></i> Добавить товар</h3><div class="form-row"><div class="form-group"><label>Название:</label><input type="text" id="newItemName" placeholder="Название товара" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;"></div><div class="form-group"><label>Цена (₽/день):</label><input type="number" id="newItemPrice" placeholder="Цена" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;"></div></div><div class="form-row"><div class="form-group"><label>Категория:</label><select id="newItemCategory" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;">${categories.filter(c=>c.key!=='all').map(c=>`<option value="${c.key}">${c.name}</option>`).join('')}</select></div><div class="form-group"><label>Количество:</label><input type="number" id="newItemCount" value="1" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;"></div></div><div class="form-row"><div class="form-group"><label>Описание:</label><input type="text" id="newItemDesc" placeholder="Краткое описание" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;"></div><div class="form-group"><label>Иконка:</label><select id="newItemIcon" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;">${iconOptions}</select></div></div><button class="btn-primary" id="addItemBtn"><i class="fas fa-save"></i> Добавить товар</button></div><div class="admin-panel"><h3><i class="fas fa-boxes"></i> Инвентарь (${inventory.length} товаров)</h3><table class="data-table"><thead><tr><th>Название</th><th>Категория</th><th>Цена</th><th>Всего</th><th>Доступно</th><th></th></tr></thead><tbody>${inventory.map(item=>`<tr><td>${item.name}</td><td>${categories.find(c=>c.key===item.category)?.name||item.category}</td><td>${item.price} ₽</td><td>${item.total}</td><td>${item.available}</td><td><button class="btn-danger delete-item-btn" data-id="${item.id}">Удалить</button></td></tr>`).join('')}</tbody></table></div><div class="admin-panel"><h3><i class="fas fa-clipboard-list"></i> Все заказы (${bookings.length})</h3><table class="data-table"><thead><tr><th>Товар</th><th>Клиент</th><th>Даты</th><th>Сумма</th><th>Статус</th></tr></thead><tbody>${bookings.map(b=>`<tr><td>${b.itemName}</td><td>${b.customerName}</td><td>${b.startDate} → ${b.endDate}</td><td>${b.totalPrice} ₽</td><td><span class="status-${b.status}">${b.status}</span></td></tr>`).join('')}</tbody></table></div></div>`; }
+
+        function openBooking(itemId) { const item = getInventory().find(i => i.id === itemId); if (!item || item.available <= 0) { showToast('Товар недоступен', 'error'); return; } currentBookingItem = item; document.getElementById('bookingItemName').textContent = item.name + ' — ' + item.price + ' ₽/день'; ['startDate', 'endDate', 'customerPhone', 'comment'].forEach(id => document.getElementById(id).value = ''); const currentUser = getCurrentUser(); const nameField = document.getElementById('customerName'); if (currentUser && currentUser.name) { nameField.value = currentUser.name; } else { nameField.value = ''; } document.getElementById('totalPrice').textContent = '0 ₽'; document.getElementById('daysCount').textContent = '0'; openModal('bookingModal'); }
+
+        function calculatePrice() { const start = document.getElementById('startDate').value; const end = document.getElementById('endDate').value; if (start && end && currentBookingItem) { const sd = new Date(start), ed = new Date(end); if (ed > sd) { const days = Math.ceil((ed - sd) / (1000 * 60 * 60 * 24)); document.getElementById('daysCount').textContent = days; document.getElementById('totalPrice').textContent = (days * currentBookingItem.price).toLocaleString() + ' ₽'; } else { document.getElementById('daysCount').textContent = '0'; document.getElementById('totalPrice').textContent = '0 ₽'; } } }
+
+        function submitBooking() { const name = document.getElementById('customerName').value.trim(); const phone = document.getElementById('customerPhone').value.trim(); const start = document.getElementById('startDate').value; const end = document.getElementById('endDate').value; if (!name) { showToast('Введите имя', 'error'); return; } if (!phone || phone.replace(/\D/g, '').length < 11) { showToast('Введите полный номер телефона', 'error'); return; } if (!start || !end) { showToast('Выберите даты', 'error'); return; } const sd = new Date(start), ed = new Date(end); if (ed <= sd) { showToast('Дата окончания должна быть позже', 'error'); return; } const days = Math.ceil((ed - sd) / (1000 * 60 * 60 * 24)); const totalPrice = days * currentBookingItem.price; pendingBookingData = { itemId: currentBookingItem.id, itemName: currentBookingItem.name, customerName: name, customerPhone: phone, startDate: start, endDate: end, days, totalPrice, comment: document.getElementById('comment').value.trim() }; closeModal('bookingModal'); showQRModal(totalPrice); }
+
+        function showQRModal(amount) { document.getElementById('qrAmount').textContent = amount.toLocaleString() + ' ₽'; document.getElementById('paymentStatus').textContent = ''; document.getElementById('qrcode').innerHTML = ''; document.getElementById('simulatePaymentBtn').disabled = false; new QRCode(document.getElementById('qrcode'), { text: `sportarenda://payment?order=pending&sum=${amount}`, width: 180, height: 180, colorDark: '#1a4a3a', colorLight: '#ffffff' }); openModal('qrModal'); document.getElementById('simulatePaymentBtn').onclick = function() { document.getElementById('paymentStatus').textContent = '⏳ Обработка платежа...'; document.getElementById('simulatePaymentBtn').disabled = true; setTimeout(() => { if (pendingBookingData) { const booking = addBooking(pendingBookingData); document.getElementById('paymentStatus').textContent = '✅ Оплата прошла успешно! Заказ добавлен в "Мои заказы".'; document.getElementById('paymentStatus').style.color = '#2d6a4f'; showToast('✅ Заказ #' + booking.id + ' успешно оформлен!'); pendingBookingData = null; } }, 2000); }; }
+
+        function cancelBookingAction(bookingId) { if (confirm('Отменить это бронирование?')) { if (cancelBooking(bookingId)) { showToast('Бронирование отменено'); navigateTo('history'); } } }
+
+        function addItemAction() { const name = document.getElementById('newItemName')?.value.trim(); const price = parseInt(document.getElementById('newItemPrice')?.value); const category = document.getElementById('newItemCategory')?.value; const total = parseInt(document.getElementById('newItemCount')?.value) || 1; const desc = document.getElementById('newItemDesc')?.value.trim() || 'Новый товар'; const icon = document.getElementById('newItemIcon')?.value || 'fa-box'; if (!name || !price) { showToast('Заполните название и цену', 'error'); return; } addInventoryItem({ name, price, category, total, desc, icon }); showToast('✅ Товар добавлен!'); navigateTo('admin'); }
+
+        function deleteItemAction(id) { if (confirm('Удалить товар #' + id + '?')) { deleteInventoryItem(id); showToast('Товар удалён'); navigateTo('admin'); } }
+
+        function initAdminHandlers() { document.getElementById('addItemBtn')?.addEventListener('click', addItemAction); document.querySelectorAll('.delete-item-btn').forEach(btn => { btn.addEventListener('click', () => deleteItemAction(parseInt(btn.dataset.id))); }); }
+
+        function toggleAuthForm() { const loginForm = document.getElementById('loginForm'); const registerForm = document.getElementById('registerForm'); if (loginForm.style.display === 'none') { loginForm.style.display = 'block'; registerForm.style.display = 'none'; } else { loginForm.style.display = 'none'; registerForm.style.display = 'block'; } }
+
+        function initAuthHandlers() {
+            document.getElementById('loginBtn')?.addEventListener('click', () => { const phone = document.getElementById('loginPhone').value.replace(/\D/g, ''); const password = document.getElementById('loginPassword').value; const errEl = document.getElementById('loginError'); if (!phone || !password) { errEl.textContent = 'Заполните все поля'; errEl.classList.add('show'); return; } if (phone.length < 11) { errEl.textContent = 'Введите полный номер телефона'; errEl.classList.add('show'); return; } const result = loginUser(phone, password); if (result.success) { showToast('✅ Вход выполнен!'); updateHeader(); navigateTo('home'); } else { errEl.textContent = result.message; errEl.classList.add('show'); } });
+            document.getElementById('registerBtn')?.addEventListener('click', () => { const name = document.getElementById('regName').value.trim(); const phone = document.getElementById('regPhone').value.replace(/\D/g, ''); const password = document.getElementById('regPassword').value; const errEl = document.getElementById('regError'); if (!name || !phone || !password) { errEl.textContent = 'Заполните все поля'; errEl.classList.add('show'); return; } if (!document.getElementById('agreeCheckbox').checked) { errEl.textContent = 'Необходимо согласие на обработку персональных данных'; errEl.classList.add('show'); return; } if (name.length < 2) { errEl.textContent = 'Имя должно содержать минимум 2 символа'; errEl.classList.add('show'); return; } if (phone.length < 11) { errEl.textContent = 'Введите полный номер телефона'; errEl.classList.add('show'); return; } if (password.length < 4) { errEl.textContent = 'Пароль должен быть не менее 4 символов'; errEl.classList.add('show'); return; } const result = registerUser(name, phone, password); if (result.success) { showToast('✅ Регистрация прошла успешно!'); updateHeader(); navigateTo('home'); } else { errEl.textContent = result.message; errEl.classList.add('show'); } });
+            document.getElementById('loginPhone')?.addEventListener('input', applyPhoneMask);
+            document.getElementById('regPhone')?.addEventListener('input', applyPhoneMask);
+        }
+
+        function applyPhoneMask(e) { let value = e.target.value.replace(/\D/g, ''); if (value.length > 0 && value[0] !== '7') value = '7' + value; if (value.length > 11) value = value.slice(0, 11); let formatted = '+7'; if (value.length > 1) formatted += ' (' + value.slice(1, 4); if (value.length >= 4) formatted += ') ' + value.slice(4, 7); if (value.length >= 7) formatted += '-' + value.slice(7, 9); if (value.length >= 9) formatted += '-' + value.slice(9, 11); e.target.value = formatted; }
+
+        function initBlogHandlers() { document.querySelectorAll('.blog-card').forEach(card => { card.addEventListener('click', () => { const article = blogArticles.find(a => a.id === parseInt(card.dataset.articleId)); if (article) { document.getElementById('blogModalContent').innerHTML = `<div style="background:linear-gradient(135deg,var(--primary-light),var(--primary));border-radius:20px;padding:40px;text-align:center;margin-bottom:20px;color:white;"><i class="fas ${article.icon}" style="font-size:3rem;"></i><h2 style="margin-top:12px;">${article.title}</h2><p>${article.date}</p></div><p style="font-size:1.1rem;line-height:1.8;">${article.content}</p>`; openModal('blogModal'); } }); }); }
+
+        function initHistoryHandlers() { document.querySelectorAll('.cancel-booking-btn').forEach(btn => { btn.addEventListener('click', () => cancelBookingAction(parseInt(btn.dataset.id))); }); }
+
+        function toggleCategories() { expandedCats = !expandedCats; const grid = document.getElementById('categoryGrid'); const btn = document.getElementById('toggleMoreCats'); if (grid && btn) { const catsToShow = expandedCats ? categories.slice(1) : categories.slice(1, 7); grid.innerHTML = catsToShow.map(cat => `<div class="cat-item" data-cat-key="${cat.key}"><i class="fas ${cat.icon}"></i><h4>${cat.name}</h4><p>Выбрать</p></div>`).join(''); btn.textContent = expandedCats ? 'Скрыть категории' : 'Показать ещё категории'; initHomeHandlers(); } }
+
+        function initHomeHandlers() { document.querySelectorAll('.cat-item').forEach(el => { el.addEventListener('click', () => { const key = el.dataset.catKey; if (key) { navigateTo('catalog'); setTimeout(() => renderCatalog(key), 300); } }); }); document.querySelectorAll('.equip-card[data-category-key]').forEach(card => { card.addEventListener('click', () => { const key = card.dataset.categoryKey; if (key) { navigateTo('catalog'); setTimeout(() => renderCatalog(key), 300); } }); }); }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function showToast(msg, type = 'success') { const toast = document.getElementById('toastMsg'); toast.textContent = msg; toast.className = 'toast-msg'; if (type === 'error') toast.classList.add('error'); toast.classList.add('show'); clearTimeout(toast._timeout); toast._timeout = setTimeout(() => toast.classList.remove('show'), 3000); }
+
+        function isValidEmail(email) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email); }
+
+        function handleSubscribe(emailInput) { const email = emailInput.value.trim(); const errorEl = document.getElementById('emailError'); if (!email || !isValidEmail(email)) { if (errorEl) errorEl.classList.add('show'); emailInput.classList.add('error'); showToast('Введите корректный email', 'error'); return; } if (errorEl) errorEl.classList.remove('show'); emailInput.classList.remove('error'); console.log('📩 НОВАЯ ПОДПИСКА НА РАССЫЛКУ:'); console.log('   Email:', email); console.log('   Дата:', new Date().toLocaleString()); console.log('   Статус: успешно подписан'); showToast('📩 Подписка оформлена!'); emailInput.value = ''; }
+
+        function setupPhoneMaskForBooking() { const phoneInput = document.getElementById('customerPhone'); if (!phoneInput) return; phoneInput.addEventListener('input', applyPhoneMask); }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (isCookiesAccepted()) document.getElementById('cookieConsent').classList.add('hidden');
+            updateHeader();
+            navigateTo('home');
+            document.getElementById('subscribeBtn').addEventListener('click', () => handleSubscribe(document.getElementById('subsEmail')));
+            document.getElementById('subsEmail').addEventListener('input', function() { this.classList.remove('error'); document.getElementById('emailError')?.classList.remove('show'); });
+            document.getElementById('startDate').addEventListener('change', calculatePrice);
+            document.getElementById('endDate').addEventListener('change', calculatePrice);
+            document.getElementById('submitBookingBtn').addEventListener('click', submitBooking);
+            setupPhoneMaskForBooking();
+            document.querySelectorAll('.modal').forEach(modal => { modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); }); });
+        });
+    </script>
+</body>
+</html>

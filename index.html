@@ -18,6 +18,7 @@
             --border: #e2edf2;
             --gray: #5c6f7e;
             --danger: #ff4444;
+            --warning: #f0ad4e;
             --radius: 20px;
             --shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
         }
@@ -235,6 +236,16 @@
             font-weight: 600;
             font-size: 0.85rem;
         }
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
         .hero-stats {
             flex: 0 0 350px;
             background: rgba(255, 255, 255, 0.08);
@@ -291,6 +302,12 @@
             gap: 24px;
             margin: 30px 0;
         }
+        .equipment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 30px 0;
+        }
         .equip-card {
             background: var(--white);
             border-radius: var(--radius);
@@ -306,6 +323,20 @@
         .equip-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 35px rgba(0, 0, 0, 0.12);
+        }
+        .equip-card.list-view {
+            flex-direction: row;
+            height: auto;
+            align-items: center;
+            text-align: left;
+            gap: 20px;
+        }
+        .equip-card.list-view .equip-icon {
+            margin-bottom: 0;
+        }
+        .equip-card.list-view .equip-desc {
+            flex-grow: 0;
+            margin: 0 16px;
         }
         .equip-icon {
             font-size: 2.5rem;
@@ -341,6 +372,7 @@
             gap: 8px;
             flex-wrap: wrap;
             margin: 20px 0;
+            align-items: center;
         }
         .filter-btn {
             padding: 8px 18px;
@@ -355,6 +387,23 @@
         }
         .filter-btn:hover,
         .filter-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        .view-toggle {
+            margin-left: auto;
+            display: flex;
+            gap: 5px;
+        }
+        .view-toggle button {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--white);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .view-toggle button.active {
             background: var(--primary);
             color: white;
         }
@@ -385,6 +434,10 @@
         }
         .status-cancelled {
             color: var(--danger);
+        }
+        .status-pending-cancel {
+            color: var(--warning);
+            font-weight: 600;
         }
         .cat-grid {
             display: grid;
@@ -567,6 +620,9 @@
             position: relative;
             max-height: 90vh;
             overflow-y: auto;
+        }
+        .modal-content.wide {
+            max-width: 700px;
         }
         .modal-close {
             position: absolute;
@@ -852,6 +908,25 @@
             color: var(--primary);
             text-decoration: underline;
         }
+        .log-entry {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        .log-entry.log-info { color: #1a4a3a; }
+        .log-entry.log-warning { color: #f0ad4e; }
+        .log-entry.log-error { color: #ff4444; }
+        .log-entry.log-success { color: #2d6a4f; font-weight: 600; }
+        .log-entry.log-action { color: #0066cc; }
+        .clear-log-btn {
+            margin-top: 10px;
+            padding: 6px 12px;
+            background: #eee;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
         main {
             flex: 1 0 auto;
         }
@@ -875,6 +950,10 @@
                 font-size: 0.8rem;
                 padding: 6px 8px;
             }
+            .equip-card.list-view {
+                flex-direction: column;
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -884,10 +963,11 @@
         <div class="container">
             <div class="header-top">
                 <div class="logo" onclick="navigateTo('home')">Спорт<span>Аренда</span></div>
-                <nav class="main-nav">
+                <nav class="main-nav" id="mainNav">
                     <a class="nav-link active" onclick="navigateTo('home')">Главная</a>
                     <a class="nav-link" onclick="navigateTo('catalog')">Каталог</a>
-                    <a class="nav-link" onclick="navigateTo('history')">Мои заказы</a>
+                    <a class="nav-link" id="navMyOrders" onclick="navigateTo('myorders')">Мои заказы</a>
+                    <a class="nav-link" id="navHistory" onclick="navigateTo('history')">История заказов</a>
                     <a class="nav-link" onclick="navigateTo('about')">О нас</a>
                     <a class="nav-link" onclick="navigateTo('support')">Поддержка</a>
                     <a class="nav-link" onclick="navigateTo('blog')">Блог</a>
@@ -1026,6 +1106,15 @@
         </div>
     </div>
 
+    <div id="logModal" class="modal">
+        <div class="modal-content wide">
+            <button class="modal-close" onclick="closeModal('logModal')">&times;</button>
+            <h2>📋 Лог действий</h2>
+            <div id="logEntries" style="max-height: 50vh; overflow-y: auto; background: #f9f9f9; border-radius: 12px; padding: 10px; margin-top: 10px;"></div>
+            <button class="clear-log-btn" onclick="clearLogs()">Очистить логи</button>
+        </div>
+    </div>
+
     <div id="toastMsg" class="toast-msg"></div>
 
     <div id="cookieConsent" class="cookie-consent">
@@ -1033,202 +1122,738 @@
         <button class="btn-primary" onclick="acceptCookies()" style="white-space:nowrap;">Принять</button>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script>
-        // ============ БАЗА ДАННЫХ ============
-        const DB_KEY = 'sportArenaDB_v6';
-        const USERS_KEY = 'sportArenaUsers_v3';
-        const CURRENT_USER_KEY = 'sportArenaCurrentUser_v3';
-        const COOKIES_ACCEPTED_KEY = 'sportArenaCookiesAccepted';
 
-        const availableIcons = [
-            { class: 'fa-bicycle', label: 'Велосипед' },{ class: 'fa-mountain', label: 'Гора' },{ class: 'fa-bolt', label: 'Молния' },{ class: 'fa-ship', label: 'Корабль' },{ class: 'fa-water', label: 'Вода' },{ class: 'fa-campground', label: 'Палатка' },{ class: 'fa-hiking', label: 'Поход' },{ class: 'fa-bed', label: 'Кровать' },{ class: 'fa-tshirt', label: 'Футболка' },{ class: 'fa-shoe-prints', label: 'Обувь' },{ class: 'fa-dumbbell', label: 'Гантель' },{ class: 'fa-yoga', label: 'Йога' },{ class: 'fa-snowboarding', label: 'Сноуборд' },{ class: 'fa-skiing', label: 'Лыжи' },{ class: 'fa-child', label: 'Ребёнок' },{ class: 'fa-shield-alt', label: 'Щит' },{ class: 'fa-box', label: 'Коробка' },{ class: 'fa-swimmer', label: 'Пловец' },{ class: 'fa-fish', label: 'Рыба' },{ class: 'fa-fire', label: 'Огонь' },{ class: 'fa-utensils', label: 'Посуда' },{ class: 'fa-glasses', label: 'Очки' },{ class: 'fa-skating', label: 'Коньки' },{ class: 'fa-skateboard', label: 'Скейт' },{ class: 'fa-table-tennis', label: 'Теннис' },{ class: 'fa-feather-alt', label: 'Бадминтон' },{ class: 'fa-umbrella-beach', label: 'Пляж' },{ class: 'fa-weight-hanging', label: 'Гиря' },
-        ];
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+    // ============ БАЗА ДАННЫХ ============
+    const DB_KEY = 'sportArenaDB_v9';
+    const USERS_KEY = 'sportArenaUsers_v6';
+    const CURRENT_USER_KEY = 'sportArenaCurrentUser_v6';
+    const COOKIES_ACCEPTED_KEY = 'sportArenaCookiesAccepted';
+    const LOGS_KEY = 'sportArenaLogs';
 
-        function getDefaultDB() {
-            return {
-                inventory: [
-                    { id: 1, name: "Горный велосипед Merida", category: "bikes", price: 1100, desc: "24 скорости, дисковые тормоза", icon: "fa-mountain", total: 15, available: 12 },{ id: 2, name: "BMX Stunt Pro", category: "bikes", price: 700, desc: "Прочный 20 дюймов, стальная рама", icon: "fa-bicycle", total: 10, available: 8 },{ id: 3, name: "Городской велосипед", category: "bikes", price: 500, desc: "Корзина, 7 скоростей, удобное седло", icon: "fa-bicycle", total: 20, available: 18 },{ id: 4, name: "Шоссейный велосипед", category: "bikes", price: 900, desc: "Карбоновая вилка, 18 скоростей", icon: "fa-bicycle", total: 8, available: 6 },{ id: 5, name: "Электро-велосипед", category: "bikes", price: 1500, desc: "Запас хода 50 км, мотор 250W", icon: "fa-bolt", total: 5, available: 4 },{ id: 6, name: "Байдарка двухместная", category: "boats", price: 1200, desc: "Устойчивая, вёсла в комплекте", icon: "fa-ship", total: 8, available: 6 },{ id: 7, name: "Байдарка одноместная", category: "boats", price: 900, desc: "Лёгкая, маневренная", icon: "fa-ship", total: 10, available: 8 },{ id: 8, name: "Каяк надувной", category: "boats", price: 1300, desc: "Спинка с регулировкой", icon: "fa-water", total: 5, available: 4 },{ id: 9, name: "SUP 10'6\"", category: "sup", price: 900, desc: "Широкий, весло и насос в компл.", icon: "fa-water", total: 12, available: 10 },{ id: 10, name: "SUP туристический", category: "sup", price: 1100, desc: "Ремни для багажа, усиленный", icon: "fa-water", total: 6, available: 5 },{ id: 11, name: "Палатка 2-местная", category: "trekking", price: 700, desc: "Водостойкая, лёгкая, тамбур", icon: "fa-campground", total: 25, available: 22 },{ id: 12, name: "Рюкзак 60L", category: "trekking", price: 450, desc: "Анатомическая спинка, каркас", icon: "fa-hiking", total: 15, available: 13 },{ id: 13, name: "Спальный мешок", category: "trekking", price: 400, desc: "Комфорт +5°C, компрессионный", icon: "fa-bed", total: 20, available: 18 },{ id: 14, name: "Гидрокостюм 3/2 мм", category: "wetsuit", price: 600, desc: "Короткие рукава, неопрен", icon: "fa-tshirt", total: 30, available: 28 },{ id: 15, name: "Гидрокостюм 5 мм", category: "wetsuit", price: 850, desc: "Полный, термошвы, для хол. воды", icon: "fa-tshirt", total: 15, available: 13 },{ id: 16, name: "Обвязка+каска", category: "climbing", price: 800, desc: "Регулируемая обвязка, каска Petzl", icon: "fa-mountain", total: 10, available: 8 },{ id: 17, name: "Скальные туфли", category: "climbing", price: 550, desc: "Размеры 36-45, липкая резина", icon: "fa-shoe-prints", total: 20, available: 18 },{ id: 18, name: "Гантели разборные 2-10 кг", category: "fitness", price: 350, desc: "Регулировка веса, хромированный гриф", icon: "fa-dumbbell", total: 15, available: 12 },{ id: 19, name: "Коврик для йоги 6 мм", category: "fitness", price: 200, desc: "Нескользящий, лёгкий, чехол", icon: "fa-yoga", total: 25, available: 23 },{ id: 20, name: "Гиря 16 кг", category: "fitness", price: 400, desc: "Чугунная, прорезиненная ручка", icon: "fa-dumbbell", total: 10, available: 8 },{ id: 21, name: "Сноуборд + ботинки", category: "winter", price: 1100, desc: "Ростовка 150-165, крепления Burton", icon: "fa-snowboarding", total: 10, available: 8 },{ id: 22, name: "Горные лыжи", category: "winter", price: 1200, desc: "Карвинговые, с палками", icon: "fa-skiing", total: 8, available: 6 },{ id: 23, name: "Детский велосипед 16\"", category: "kids", price: 450, desc: "С доп. колёсами, звонок", icon: "fa-bicycle", total: 12, available: 10 },{ id: 24, name: "Защитный комплект детский", category: "kids", price: 250, desc: "Шлем, наколенники, налокотники", icon: "fa-shield-alt", total: 15, available: 13 }
-                ],
-                bookings: []
-            };
+    // Админ аккаунт
+    const ADMIN_CREDENTIALS = { id: 999999, phone: '0000000000', password: 'Admin123', name: 'Администратор', isAdmin: true, createdAt: new Date().toISOString() };
+
+    function getLogs() { let logs = localStorage.getItem(LOGS_KEY); return logs ? JSON.parse(logs) : []; }
+    function saveLogs(logs) { localStorage.setItem(LOGS_KEY, JSON.stringify(logs)); }
+    
+    function addLog(message, type = 'action') {
+        const logs = getLogs();
+        logs.push({ message, type, timestamp: new Date().toLocaleString() });
+        if (logs.length > 200) logs.splice(0, logs.length - 200);
+        saveLogs(logs);
+    }
+
+    function clearLogs() {
+        localStorage.setItem(LOGS_KEY, JSON.stringify([]));
+        if (document.getElementById('logEntries')) {
+            document.getElementById('logEntries').innerHTML = '<p style="color:#999; text-align:center;">Логи очищены</p>';
         }
+        addLog('Логи очищены пользователем', 'action');
+    }
 
-        function getDB() { let db = localStorage.getItem(DB_KEY); if (!db) { db = getDefaultDB(); localStorage.setItem(DB_KEY, JSON.stringify(db)); return db; } return JSON.parse(db); }
-        function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
-        function getInventory() { return getDB().inventory; }
-        function getBookings() { return getDB().bookings; }
-
-        function addBooking(booking) { const db = getDB(); booking.id = Date.now(); booking.status = 'active'; booking.createdAt = new Date().toISOString(); db.bookings.unshift(booking); const item = db.inventory.find(i => i.id === booking.itemId); if (item && item.available > 0) item.available--; saveDB(db); return booking; }
-        function cancelBooking(bookingId) { const db = getDB(); const booking = db.bookings.find(b => b.id === bookingId); if (booking && booking.status === 'active') { booking.status = 'cancelled'; const item = db.inventory.find(i => i.id === booking.itemId); if (item) item.available++; saveDB(db); return true; } return false; }
-        function addInventoryItem(item) { const db = getDB(); item.id = db.inventory.length > 0 ? Math.max(...db.inventory.map(i => i.id)) + 1 : 1; item.available = item.total || 1; if (!item.icon) item.icon = 'fa-box'; db.inventory.push(item); saveDB(db); }
-        function deleteInventoryItem(id) { const db = getDB(); db.inventory = db.inventory.filter(i => i.id !== id); saveDB(db); }
-
-        function getUsers() { let users = localStorage.getItem(USERS_KEY); return users ? JSON.parse(users) : []; }
-        function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
-        function registerUser(name, phone, password) { const users = getUsers(); if (users.find(u => u.phone === phone)) return { success: false, message: 'Этот номер телефона уже зарегистрирован' }; const newUser = { id: Date.now(), name, phone, password, createdAt: new Date().toISOString() }; users.push(newUser); saveUsers(users); localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser)); return { success: true, user: newUser }; }
-        function loginUser(phone, password) { const users = getUsers(); const user = users.find(u => u.phone === phone && u.password === password); if (user) { localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user)); return { success: true, user }; } return { success: false, message: 'Неверный номер телефона или пароль' }; }
-        function getCurrentUser() { const user = localStorage.getItem(CURRENT_USER_KEY); return user ? JSON.parse(user) : null; }
-        function logoutUser() { localStorage.removeItem(CURRENT_USER_KEY); }
-
-        function acceptCookies() { localStorage.setItem(COOKIES_ACCEPTED_KEY, 'true'); document.getElementById('cookieConsent').classList.add('hidden'); showToast('🍪 Спасибо! Cookie-файлы приняты.'); }
-        function isCookiesAccepted() { return localStorage.getItem(COOKIES_ACCEPTED_KEY) === 'true'; }
-
-        const categories = [
-            { key: 'all', name: 'Все', icon: 'fa-globe' },{ key: 'bikes', name: 'Велосипеды', icon: 'fa-bicycle' },{ key: 'boats', name: 'Лодки', icon: 'fa-ship' },{ key: 'sup', name: 'SUP-борды', icon: 'fa-water' },{ key: 'trekking', name: 'Туризм', icon: 'fa-campground' },{ key: 'wetsuit', name: 'Гидрокостюмы', icon: 'fa-tshirt' },{ key: 'climbing', name: 'Скалолазание', icon: 'fa-mountain' },{ key: 'fitness', name: 'Фитнес', icon: 'fa-dumbbell' },{ key: 'winter', name: 'Зимний спорт', icon: 'fa-snowboarding' },{ key: 'kids', name: 'Детское', icon: 'fa-child' }
-        ];
-
-        const mainInventory = [
-            { name: "Велосипеды", icon: "fas fa-bicycle", count: "57+", desc: "Горные, шоссейные, BMX", price: "от 500₽", key: "bikes" },{ name: "Лодки и байдарки", icon: "fas fa-ship", count: "23", desc: "Одноместные, каяки", price: "от 900₽", key: "boats" },{ name: "SUP-борды", icon: "fas fa-water", count: "18", desc: "Надувные доски", price: "от 900₽", key: "sup" },{ name: "Туризм", icon: "fas fa-campground", count: "60", desc: "Палатки, спальники, рюкзаки", price: "от 400₽", key: "trekking" },{ name: "Гидрокостюмы", icon: "fas fa-tshirt", count: "45", desc: "3/5 мм неопрен", price: "от 600₽", key: "wetsuit" },{ name: "Скалолазание", icon: "fas fa-mountain", count: "30", desc: "Обвязки, каски, верёвки", price: "от 550₽", key: "climbing" }
-        ];
-
-const blogArticles = [
-    { id: 1, title: "Топ-5 горных велосипедов 2026", icon: "fa-bicycle", date: "15 мая 2026", excerpt: "Сравнили модели Merida, Trek и Cannondale. Какой выбрать для пересечённой местности?", content: "После тщательного тестирования мы выбрали лучшие горные велосипеды 2026 года. Лидером стал Merida Big Nine — отличная геометрия рамы, надёжные дисковые тормоза Shimano и вилка RockShox. На втором месте Trek Marlin 7 — легендарная надёжность и комфорт. Cannondale Trail занял третье место благодаря карбоновой раме и малому весу. Для новичков рекомендуем Stels Navigator — бюджетный, но качественный вариант. И замыкает пятёрку Giant Talon — универсальный велосипед для города и леса." },
-    { id: 2, title: "Байдарочный маршрут по Вуоксе", icon: "fa-water", date: "3 июня 2026", excerpt: "Полный гайд по трёхдневному сплаву с семьёй. Где ночевать и что взять с собой.", content: "Маршрут по реке Вуокса — идеальный вариант для семейного сплава. Стартуем от посёлка Лосево, финишируем через 45 км в Приозерске. На маршруте есть оборудованные стоянки с костровищами. Обязательно возьмите с собой: палатку с тентом, спальники с температурой комфорта +5°C, газовую горелку, репелленты и дождевики. Уровень воды в июне комфортный, пороги проходимы даже для новичков. Наша команда арендует байдарки «Таймень-2» — они устойчивы и вместительны." },
-    { id: 3, title: "Как выбрать гантели для дома", icon: "fa-dumbbell", date: "20 мая 2026", excerpt: "Разборные или фиксированные? Сравнение весов и материалов для фитнеса дома.", content: "Для домашних тренировок оптимальны разборные гантели с набором блинов от 2.5 до 10 кг. Они занимают мало места и позволяют прогрессировать в нагрузке. Виниловые гантели подойдут для аэробики, а чугунные — для силовых тренировок. Обратите внимание на гриф: диаметр 25 мм подходит для стандартных блинов. В нашем прокате есть комплекты с блинами 2.5, 5 и 10 кг — идеально для начала." }
-];
-
-        let currentPage = 'home';
-        let currentBookingItem = null;
-        let currentFilter = 'all';
-        let expandedCats = false;
-        let pendingBookingData = null;
-
-        function updateHeader() {
-            const headerActions = document.getElementById('headerActions');
-            const currentUser = getCurrentUser();
-            if (currentUser) {
-                headerActions.innerHTML = `<button class="header-btn" onclick="navigateTo('admin')" title="Админ-панель"><i class="fas fa-cog"></i> Админ</button><div class="user-header"><span class="user-name" onclick="navigateTo('history')"><i class="fas fa-user-circle"></i> ${currentUser.name}</span><button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Выйти</button></div>`;
+    function showLogModal() {
+        const logs = getLogs();
+        const logEntries = document.getElementById('logEntries');
+        if (logEntries) {
+            if (logs.length === 0) {
+                logEntries.innerHTML = '<p style="color:#999; text-align:center;">Нет записей в логе</p>';
             } else {
-                headerActions.innerHTML = `<button class="header-btn" onclick="navigateTo('admin')" title="Админ-панель"><i class="fas fa-cog"></i> Админ</button><button class="login-header-btn" onclick="navigateTo('auth')"><i class="fas fa-sign-in-alt"></i> Войти</button>`;
+                logEntries.innerHTML = logs.slice().reverse().map(log => 
+                    `<div class="log-entry log-${log.type}"><strong>[${log.timestamp}]</strong> ${log.message}</div>`
+                ).join('');
             }
         }
+        openModal('logModal');
+        addLog('Открыт просмотр логов', 'action');
+    }
 
-        function handleLogout() { logoutUser(); updateHeader(); showToast('Вы вышли из аккаунта'); navigateTo('home'); }
+    const availableIcons = [
+        { class: 'fa-bicycle', label: 'Велосипед' },{ class: 'fa-mountain', label: 'Гора' },{ class: 'fa-bolt', label: 'Молния' },{ class: 'fa-ship', label: 'Корабль' },{ class: 'fa-water', label: 'Вода' },{ class: 'fa-campground', label: 'Палатка' },{ class: 'fa-hiking', label: 'Поход' },{ class: 'fa-bed', label: 'Кровать' },{ class: 'fa-tshirt', label: 'Футболка' },{ class: 'fa-shoe-prints', label: 'Обувь' },{ class: 'fa-dumbbell', label: 'Гантель' },{ class: 'fa-yoga', label: 'Йога' },{ class: 'fa-snowboarding', label: 'Сноуборд' },{ class: 'fa-skiing', label: 'Лыжи' },{ class: 'fa-child', label: 'Ребёнок' },{ class: 'fa-shield-alt', label: 'Щит' },{ class: 'fa-box', label: 'Коробка' },{ class: 'fa-swimmer', label: 'Пловец' },{ class: 'fa-fish', label: 'Рыба' },{ class: 'fa-fire', label: 'Огонь' },{ class: 'fa-utensils', label: 'Посуда' },{ class: 'fa-glasses', label: 'Очки' },{ class: 'fa-skating', label: 'Коньки' },{ class: 'fa-skateboard', label: 'Скейт' },{ class: 'fa-table-tennis', label: 'Теннис' },{ class: 'fa-feather-alt', label: 'Бадминтон' },{ class: 'fa-umbrella-beach', label: 'Пляж' },{ class: 'fa-weight-hanging', label: 'Гиря' },
+    ];
 
-        function navigateTo(page) {
-            currentPage = page;
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            const content = document.getElementById('mainContent');
-            const navLinks = document.querySelectorAll('.nav-link');
-            updateHeader();
-            switch (page) {
-                case 'home': content.innerHTML = getHomePage(); if (navLinks[0]) navLinks[0].classList.add('active'); break;
-                case 'catalog': content.innerHTML = getCatalogPage(); if (navLinks[1]) navLinks[1].classList.add('active'); break;
-                case 'history': content.innerHTML = getHistoryPage(); if (navLinks[2]) navLinks[2].classList.add('active'); break;
-                case 'about': content.innerHTML = getAboutPage(); if (navLinks[3]) navLinks[3].classList.add('active'); break;
-                case 'support': content.innerHTML = getSupportPage(); if (navLinks[4]) navLinks[4].classList.add('active'); break;
-                case 'blog': content.innerHTML = getBlogPage(); if (navLinks[5]) navLinks[5].classList.add('active'); break;
-                case 'auth': content.innerHTML = getAuthPage(); break;
-                case 'privacy': content.innerHTML = getPrivacyPage(); break;
-                case 'admin': content.innerHTML = getAdminPage(); break;
-            }
-            window.scrollTo(0, 0);
-            if (page === 'home') { setTimeout(initHomeHandlers, 150); setTimeout(animateCounters, 300); }
-            if (page === 'catalog') { currentFilter = 'all'; setTimeout(() => renderCatalog(currentFilter), 150); }
-            if (page === 'auth') setTimeout(initAuthHandlers, 150);
-            if (page === 'admin') setTimeout(initAdminHandlers, 150);
-            if (page === 'blog') setTimeout(initBlogHandlers, 150);
-            if (page === 'history') setTimeout(initHistoryHandlers, 150);
+    function getDefaultDB() {
+        return {
+            inventory: [
+                { id: 1, name: "Горный велосипед Merida", category: "bikes", price: 1100, desc: "24 скорости, дисковые тормоза", icon: "fa-mountain", total: 15, available: 12 },{ id: 2, name: "BMX Stunt Pro", category: "bikes", price: 700, desc: "Прочный 20 дюймов, стальная рама", icon: "fa-bicycle", total: 10, available: 8 },{ id: 3, name: "Городской велосипед", category: "bikes", price: 500, desc: "Корзина, 7 скоростей, удобное седло", icon: "fa-bicycle", total: 20, available: 18 },{ id: 4, name: "Шоссейный велосипед", category: "bikes", price: 900, desc: "Карбоновая вилка, 18 скоростей", icon: "fa-bicycle", total: 8, available: 6 },{ id: 5, name: "Электро-велосипед", category: "bikes", price: 1500, desc: "Запас хода 50 км, мотор 250W", icon: "fa-bolt", total: 5, available: 4 },{ id: 6, name: "Байдарка двухместная", category: "boats", price: 1200, desc: "Устойчивая, вёсла в комплекте", icon: "fa-ship", total: 8, available: 6 },{ id: 7, name: "Байдарка одноместная", category: "boats", price: 900, desc: "Лёгкая, маневренная", icon: "fa-ship", total: 10, available: 8 },{ id: 8, name: "Каяк надувной", category: "boats", price: 1300, desc: "Спинка с регулировкой", icon: "fa-water", total: 5, available: 4 },{ id: 9, name: "SUP 10'6\"", category: "sup", price: 900, desc: "Широкий, весло и насос в компл.", icon: "fa-water", total: 12, available: 10 },{ id: 10, name: "SUP туристический", category: "sup", price: 1100, desc: "Ремни для багажа, усиленный", icon: "fa-water", total: 6, available: 5 },{ id: 11, name: "Палатка 2-местная", category: "trekking", price: 700, desc: "Водостойкая, лёгкая, тамбур", icon: "fa-campground", total: 25, available: 22 },{ id: 12, name: "Рюкзак 60L", category: "trekking", price: 450, desc: "Анатомическая спинка, каркас", icon: "fa-hiking", total: 15, available: 13 },{ id: 13, name: "Спальный мешок", category: "trekking", price: 400, desc: "Комфорт +5°C, компрессионный", icon: "fa-bed", total: 20, available: 18 },{ id: 14, name: "Гидрокостюм 3/2 мм", category: "wetsuit", price: 600, desc: "Короткие рукава, неопрен", icon: "fa-tshirt", total: 30, available: 28 },{ id: 15, name: "Гидрокостюм 5 мм", category: "wetsuit", price: 850, desc: "Полный, термошвы, для хол. воды", icon: "fa-tshirt", total: 15, available: 13 },{ id: 16, name: "Обвязка+каска", category: "climbing", price: 800, desc: "Регулируемая обвязка, каска Petzl", icon: "fa-mountain", total: 10, available: 8 },{ id: 17, name: "Скальные туфли", category: "climbing", price: 550, desc: "Размеры 36-45, липкая резина", icon: "fa-shoe-prints", total: 20, available: 18 },{ id: 18, name: "Гантели разборные 2-10 кг", category: "fitness", price: 350, desc: "Регулировка веса, хромированный гриф", icon: "fa-dumbbell", total: 15, available: 12 },{ id: 19, name: "Коврик для йоги 6 мм", category: "fitness", price: 200, desc: "Нескользящий, лёгкий, чехол", icon: "fa-yoga", total: 25, available: 23 },{ id: 20, name: "Гиря 16 кг", category: "fitness", price: 400, desc: "Чугунная, прорезиненная ручка", icon: "fa-dumbbell", total: 10, available: 8 },{ id: 21, name: "Сноуборд + ботинки", category: "winter", price: 1100, desc: "Ростовка 150-165, крепления Burton", icon: "fa-snowboarding", total: 10, available: 8 },{ id: 22, name: "Горные лыжи", category: "winter", price: 1200, desc: "Карвинговые, с палками", icon: "fa-skiing", total: 8, available: 6 },{ id: 23, name: "Детский велосипед 16\"", category: "kids", price: 450, desc: "С доп. колёсами, звонок", icon: "fa-bicycle", total: 12, available: 10 },{ id: 24, name: "Защитный комплект детский", category: "kids", price: 250, desc: "Шлем, наколенники, налокотники", icon: "fa-shield-alt", total: 15, available: 13 }
+            ],
+            bookings: []
+        };
+    }
+
+    function getDB() { let db = localStorage.getItem(DB_KEY); if (!db) { db = getDefaultDB(); localStorage.setItem(DB_KEY, JSON.stringify(db)); return db; } return JSON.parse(db); }
+    function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+    function getInventory() { return getDB().inventory; }
+    function getBookings() { return getDB().bookings; }
+
+    function addBooking(booking) { 
+        const db = getDB(); 
+        booking.id = Date.now(); 
+        booking.status = 'active'; 
+        booking.createdAt = new Date().toISOString(); 
+        booking.customerId = booking.customerId || null;
+        db.bookings.unshift(booking); 
+        const item = db.inventory.find(i => i.id === booking.itemId); 
+        if (item && item.available > 0) item.available--; 
+        saveDB(db); 
+        addLog(`✅ НОВОЕ БРОНИРОВАНИЕ #${booking.id}: "${booking.itemName}" - клиент: ${booking.customerName}, тел: ${booking.customerPhone}, даты: ${booking.startDate} → ${booking.endDate}, сумма: ${booking.totalPrice}₽`, 'success');
+        return booking; 
+    }
+
+    function cancelBooking(bookingId) { 
+        const db = getDB(); 
+        const booking = db.bookings.find(b => b.id === bookingId); 
+        if (booking && booking.status === 'active') { 
+            booking.status = 'pending-cancel'; 
+            booking.cancelRequestedAt = new Date().toISOString();
+            saveDB(db); 
+            addLog(`⚠️ ЗАПРОС НА ОТМЕНУ бронирования #${bookingId}: "${booking.itemName}" от ${booking.customerName}. Ожидает подтверждения администратора`, 'warning');
+            return true; 
+        } 
+        addLog(`❌ ОШИБКА ОТМЕНЫ: бронирование #${bookingId} не найдено или уже отменено`, 'error');
+        return false; 
+    }
+
+    function confirmCancelBooking(bookingId) {
+        const db = getDB();
+        const booking = db.bookings.find(b => b.id === bookingId);
+        if (booking && booking.status === 'pending-cancel') {
+            booking.status = 'cancelled';
+            booking.confirmedAt = new Date().toISOString();
+            const item = db.inventory.find(i => i.id === booking.itemId);
+            if (item) item.available++;
+            saveDB(db);
+            addLog(`✅ ОТМЕНА ПОДТВЕРЖДЕНА: бронирование #${bookingId} "${booking.itemName}". Товар возвращён в доступные (${item ? item.available : '?'} из ${item ? item.total : '?'})`, 'success');
+            return true;
         }
+        addLog(`❌ ОШИБКА ПОДТВЕРЖДЕНИЯ: бронирование #${bookingId} не в статусе ожидания отмены`, 'error');
+        return false;
+    }
 
-        function animateCounters() {
-            const counters = document.querySelectorAll('.stat-item h3');
-            counters.forEach(counter => {
-                const target = parseInt(counter.textContent);
-                if (isNaN(target)) return;
-                let current = 0;
-                const increment = target / 50;
-                const timer = setInterval(() => {
-                    current += increment;
-                    if (current >= target) { counter.textContent = target + '+'; clearInterval(timer); }
-                    else { counter.textContent = Math.floor(current) + '+'; }
-                }, 30);
-            });
+    function addInventoryItem(item) { 
+        const db = getDB(); 
+        item.id = db.inventory.length > 0 ? Math.max(...db.inventory.map(i => i.id)) + 1 : 1; 
+        item.available = item.total || 1; 
+        if (!item.icon) item.icon = 'fa-box'; 
+        db.inventory.push(item); 
+        saveDB(db); 
+        addLog(`➕ ДОБАВЛЕН ТОВАР: "${item.name}" (категория: ${item.category}, цена: ${item.price}₽/день, количество: ${item.total} шт.)`, 'success'); 
+    }
+    
+    function deleteInventoryItem(id) { 
+        const db = getDB(); 
+        const item = db.inventory.find(i => i.id === id); 
+        db.inventory = db.inventory.filter(i => i.id !== id); 
+        saveDB(db); 
+        if (item) addLog(`🗑️ УДАЛЁН ТОВАР: "${item.name}" (ID: ${id})`, 'error'); 
+    }
+
+    function getUsers() { 
+        let users = localStorage.getItem(USERS_KEY); 
+        if (!users) {
+            users = [ADMIN_CREDENTIALS];
+            saveUsers(users);
+            addLog('👤 Система инициализирована: создан аккаунт администратора', 'info');
+            return users;
         }
-
-        function getHomePage() {
-            return `<div class="hero-wrapper"><div class="container"><div class="hero"><div class="hero-content"><div class="hero-badge"><i class="fas fa-bicycle"></i> Активный отдых без границ</div><h1>Аренда снаряжения для любых приключений</h1><p>Велосипеды, байдарки, горное снаряжение и полный комплект для активного туризма.</p><div class="btn-group"><button class="btn-primary" onclick="navigateTo('catalog')"><i class="fas fa-list"></i> Каталог</button></div></div><div class="hero-stats"><div class="stats-grid"><div class="stat-item"><h3>120+</h3><p>ед. техники</p></div><div class="stat-item"><h3>98%</h3><p>довольных клиентов</p></div><div class="stat-item"><h3>24/7</h3><p>поддержка</p></div><div class="stat-item"><h3>5 звёзд</h3><p>на картах</p></div></div></div></div></div></div><div class="container" style="padding-top:30px;"><div class="section-title">🏕️ Топ-снаряжение для активного сезона</div><p style="margin-bottom:16px;color:#2c5a47;">Выберите инвентарь — от лёгких прогулок до экстремальных маршрутов</p><div class="equipment-grid" id="inventoryList">${mainInventory.map(item => `<div class="equip-card" data-category-key="${item.key}"><div class="equip-icon"><i class="${item.icon}"></i></div><h3>${item.name}</h3><div class="equip-count">${item.count}</div><div class="equip-desc">${item.desc}</div><div style="font-weight:700;color:#2d6a4f;">${item.price}</div></div>`).join('')}</div><div class="section-title">🧭 Каталог по видам спорта</div><div class="cat-grid" id="categoryGrid">${categories.slice(1,7).map(cat => `<div class="cat-item" data-cat-key="${cat.key}"><i class="fas ${cat.icon}"></i><h4>${cat.name}</h4><p>Выбрать</p></div>`).join('')}</div><div class="show-more-cats"><button class="btn-show-more" id="toggleMoreCats" onclick="toggleCategories()">Показать ещё категории</button></div></div>`;
+        users = JSON.parse(users);
+        if (!users.find(u => u.isAdmin && u.phone === '0000000000')) {
+            users.push(ADMIN_CREDENTIALS);
+            saveUsers(users);
+            addLog('👤 Аккаунт администратора восстановлен', 'info');
         }
-
-        function getCatalogPage() { return `<div class="container" style="padding:30px 0;"><h2 style="font-size:2rem;margin-bottom:20px;">📦 Каталог снаряжения</h2><div class="filter-bar" id="filterBar">${categories.map(cat => `<button class="filter-btn ${cat.key==='all'?'active':''}" data-filter="${cat.key}" onclick="renderCatalog('${cat.key}')"><i class="fas ${cat.icon}"></i> ${cat.name}</button>`).join('')}</div><div class="equipment-grid" id="catalogGrid"></div></div>`; }
-
-        function renderCatalog(filterKey) { currentFilter = filterKey; const inventory = getInventory(); const filtered = filterKey === 'all' ? inventory : inventory.filter(i => i.category === filterKey); document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === filterKey)); const grid = document.getElementById('catalogGrid'); if (!grid) return; grid.innerHTML = filtered.map(item => `<div class="equip-card" style="height:340px;"><div class="equip-icon"><i class="fas ${item.icon||'fa-box'}"></i></div><h3>${item.name}</h3><div class="equip-desc">${item.desc}</div><div class="equip-count" style="font-size:1.4rem;">${item.price} ₽/день</div><p style="color:#666;font-size:0.85rem;">Доступно: ${item.available} из ${item.total}</p><button class="btn-primary rent-btn" data-id="${item.id}" ${item.available===0?'disabled style="opacity:0.5;cursor:not-allowed;"':''}>${item.available===0?'Нет в наличии':'Арендовать'}</button></div>`).join(''); document.querySelectorAll('.rent-btn').forEach(btn => { if (!btn.disabled) btn.addEventListener('click', function(e) { e.stopPropagation(); e.preventDefault(); openBooking(parseInt(this.dataset.id)); }); }); }
-
-        function getHistoryPage() { const bookings = getBookings(); if (bookings.length === 0) return `<div class="container" style="padding:60px 0;text-align:center;"><i class="fas fa-clipboard-list" style="font-size:4rem;color:#ccc;"></i><h2 style="margin:20px 0;">Нет бронирований</h2><p style="margin-bottom:20px;">Вы ещё ничего не забронировали</p><button class="btn-primary" onclick="navigateTo('catalog')">Перейти в каталог</button></div>`; return `<div class="container" style="padding:30px 0;"><h2>📋 История бронирований</h2><table class="data-table"><thead><tr><th>Товар</th><th>Клиент</th><th>Телефон</th><th>Дата начала</th><th>Дата оконч.</th><th>Дней</th><th>Сумма</th><th>Статус</th><th></th></tr></thead><tbody>${bookings.map(b => `<tr><td><strong>${b.itemName}</strong></td><td>${b.customerName}</td><td>${b.customerPhone}</td><td>${b.startDate}</td><td>${b.endDate}</td><td>${b.days}</td><td>${b.totalPrice} ₽</td><td><span class="status-${b.status}">${b.status==='active'?'Активно':b.status==='cancelled'?'Отменено':'Завершено'}</span></td><td>${b.status==='active'?`<button class="btn-danger cancel-booking-btn" data-id="${b.id}">Отменить</button>`:'-'}</td></tr>`).join('')}</tbody></table></div>`; }
-
-        function getAboutPage() { return `<div class="container info-page"><h2>О нас</h2><p style="font-size:1.1rem;margin-bottom:30px;">СпортАренда — команда профессионалов, влюблённых в активный образ жизни.</p><div class="info-card"><h3><i class="fas fa-users"></i> Наш коллектив</h3><p>Нас 25 человек: от инструкторов по водным видам до механиков велосипедов.</p></div><div class="info-card"><h3><i class="fas fa-clock"></i> Расписание работы</h3><p><strong>Пункты проката:</strong> ежедневно с 8:00 до 22:00</p></div><div class="info-card"><h3><i class="fas fa-map-marker-alt"></i> Пункты проката</h3><p><strong>Москва:</strong> ул. Лужники, 24, стр. 1</p></div></div>`; }
-
-        function getSupportPage() { return `<div class="container info-page"><h2>Поддержка</h2><p style="font-size:1.1rem;margin-bottom:30px;">Мы всегда рядом, чтобы помочь вам.</p><div class="info-card"><h3><i class="fas fa-question-circle"></i> Часто задаваемые вопросы</h3><div class="faq-item"><h4>Как забронировать?</h4><p>Выберите товар в каталоге, заполните форму и оплатите.</p></div><div class="faq-item"><h4>Какие документы нужны?</h4><p>Паспорт или водительское удостоверение.</p></div></div></div>`; }
-
-        function getBlogPage() { return `<div class="container info-page"><h2>Блог</h2><p style="font-size:1.1rem;margin-bottom:30px;">Новости, советы и лучшие маршруты.</p><div class="blog-grid">${blogArticles.map(article => `<div class="blog-card" data-article-id="${article.id}"><div class="blog-card-img"><i class="fas ${article.icon}"></i></div><div class="blog-card-body"><h4>${article.title}</h4><p>${article.excerpt}</p><p style="color:#6b7f8f;font-size:0.85rem;">${article.date}</p></div></div>`).join('')}</div></div>`; }
-
-        function getAuthPage() {
-            return `<div class="auth-page-wrapper"><div class="auth-card" id="loginForm"><h2>Вход</h2><p class="auth-subtitle">Войдите в свой аккаунт для управления заказами</p><div class="form-group"><label>Номер телефона:</label><input type="tel" id="loginPhone" placeholder="+7 (___) ___-__-__" maxlength="18"></div><div class="form-group"><label>Пароль:</label><input type="password" id="loginPassword" placeholder="Введите пароль"></div><p class="auth-error" id="loginError"></p><button class="auth-btn" id="loginBtn">Войти</button><p class="auth-switch">Нет аккаунта? <span onclick="toggleAuthForm()">Зарегистрироваться</span></p></div><div class="auth-card" id="registerForm" style="display:none;"><h2>Регистрация</h2><p class="auth-subtitle">Создайте аккаунт для бронирования снаряжения</p><div class="form-group"><label>Ваше имя:</label><input type="text" id="regName" placeholder="Иван Иванов"></div><div class="form-group"><label>Номер телефона:</label><input type="tel" id="regPhone" placeholder="+7 (___) ___-__-__" maxlength="18"></div><div class="form-group"><label>Придумайте пароль:</label><input type="password" id="regPassword" placeholder="Минимум 4 символа"></div><div class="form-group"><label class="agree-label"><input type="checkbox" id="agreeCheckbox"> Я согласен на обработку <span style="color:var(--primary);cursor:pointer;text-decoration:underline;" onclick="navigateTo('privacy')">персональных данных</span></label></div><p class="auth-error" id="regError"></p><button class="auth-btn" id="registerBtn">Зарегистрироваться</button><p class="auth-switch">Уже есть аккаунт? <span onclick="toggleAuthForm()">Войти</span></p></div></div>`;
+        return users;
+    }
+    function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+    
+    function registerUser(name, phone, password) { 
+        const users = getUsers(); 
+        if (users.find(u => u.phone === phone)) {
+            addLog(`❌ ПОПЫТКА РЕГИСТРАЦИИ: телефон ${phone} уже зарегистрирован`, 'error');
+            return { success: false, message: 'Этот номер телефона уже зарегистрирован' }; 
         }
+        const newUser = { id: Date.now(), name, phone, password, createdAt: new Date().toISOString(), isAdmin: false }; 
+        users.push(newUser); 
+        saveUsers(users); 
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser)); 
+        addLog(`👤 РЕГИСТРАЦИЯ: новый пользователь "${name}" (тел: ${phone})`, 'success');
+        return { success: true, user: newUser }; 
+    }
+    
+    function loginUser(phone, password) { 
+        const users = getUsers(); 
+        
+        // Ищем пользователя — админ имеет телефон 0000000000
+        const user = users.find(u => u.phone === phone && u.password === password); 
+        if (user) { 
+            localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user)); 
+            addLog(`🔑 ВХОД В СИСТЕМУ: "${user.name}" (${user.isAdmin ? 'Администратор' : 'Пользователь'}, тел: ${phone})`, 'info');
+            return { success: true, user }; 
+        } 
+        addLog(`❌ НЕУДАЧНЫЙ ВХОД: неверный телефон (${phone}) или пароль`, 'error');
+        return { success: false, message: 'Неверный номер телефона или пароль' }; 
+    }
+    
+    function getCurrentUser() { const user = localStorage.getItem(CURRENT_USER_KEY); return user ? JSON.parse(user) : null; }
+    function logoutUser() { 
+        const user = getCurrentUser();
+        if (user) addLog(`🚪 ВЫХОД ИЗ СИСТЕМЫ: "${user.name}"`, 'info');
+        localStorage.removeItem(CURRENT_USER_KEY); 
+    }
 
-        function getPrivacyPage() { return `<div class="container info-page"><h2>Политика конфиденциальности</h2><div class="info-card"><h3>1. Сбор данных</h3><p>Мы собираем только необходимые данные: имя, телефон, email.</p><h3>2. Хранение данных</h3><p>Все данные хранятся в локальном хранилище браузера (localStorage).</p><h3>3. Cookie-файлы</h3><p>Мы используем cookie-файлы для сохранения настроек.</p></div><h2 style="margin-top:40px;">Обработка персональных данных</h2><div class="info-card"><h3>1. Какие данные мы собираем</h3><p>При регистрации: имя, номер телефона. При бронировании: имя, телефон, комментарий. При подписке: email.</p><h3>2. Цели обработки</h3><p>Данные используются для оформления заказов и связи с вами.</p><h3>3. Хранение</h3><p>Данные хранятся в localStorage и не передаются на сервер.</p><h3>4. Согласие</h3><p>Используя сайт, вы даёте согласие на обработку данных по ФЗ-152.</p></div></div>`; }
+    function acceptCookies() { 
+        localStorage.setItem(COOKIES_ACCEPTED_KEY, 'true'); 
+        document.getElementById('cookieConsent').classList.add('hidden'); 
+        addLog('🍪 Cookie-файлы приняты пользователем', 'info'); 
+        showToast('🍪 Спасибо! Cookie-файлы приняты.'); 
+    }
+    function isCookiesAccepted() { return localStorage.getItem(COOKIES_ACCEPTED_KEY) === 'true'; }
 
-        function getAdminPage() { const inventory = getInventory(); const bookings = getBookings(); const iconOptions = availableIcons.map(ic => `<option value="${ic.class}">${ic.label} (${ic.class})</option>`).join(''); return `<div class="container" style="padding:30px 0;"><h2>⚙️ Админ-панель</h2><div class="admin-panel"><h3><i class="fas fa-plus-circle"></i> Добавить товар</h3><div class="form-row"><div class="form-group"><label>Название:</label><input type="text" id="newItemName" placeholder="Название товара" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;"></div><div class="form-group"><label>Цена (₽/день):</label><input type="number" id="newItemPrice" placeholder="Цена" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;"></div></div><div class="form-row"><div class="form-group"><label>Категория:</label><select id="newItemCategory" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;">${categories.filter(c=>c.key!=='all').map(c=>`<option value="${c.key}">${c.name}</option>`).join('')}</select></div><div class="form-group"><label>Количество:</label><input type="number" id="newItemCount" value="1" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;"></div></div><div class="form-row"><div class="form-group"><label>Описание:</label><input type="text" id="newItemDesc" placeholder="Краткое описание" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;"></div><div class="form-group"><label>Иконка:</label><select id="newItemIcon" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;">${iconOptions}</select></div></div><button class="btn-primary" id="addItemBtn"><i class="fas fa-save"></i> Добавить товар</button></div><div class="admin-panel"><h3><i class="fas fa-boxes"></i> Инвентарь (${inventory.length} товаров)</h3><table class="data-table"><thead><tr><th>Название</th><th>Категория</th><th>Цена</th><th>Всего</th><th>Доступно</th><th></th></tr></thead><tbody>${inventory.map(item=>`<tr><td>${item.name}</td><td>${categories.find(c=>c.key===item.category)?.name||item.category}</td><td>${item.price} ₽</td><td>${item.total}</td><td>${item.available}</td><td><button class="btn-danger delete-item-btn" data-id="${item.id}">Удалить</button></td></tr>`).join('')}</tbody></table></div><div class="admin-panel"><h3><i class="fas fa-clipboard-list"></i> Все заказы (${bookings.length})</h3><table class="data-table"><thead><tr><th>Товар</th><th>Клиент</th><th>Даты</th><th>Сумма</th><th>Статус</th></tr></thead><tbody>${bookings.map(b=>`<tr><td>${b.itemName}</td><td>${b.customerName}</td><td>${b.startDate} → ${b.endDate}</td><td>${b.totalPrice} ₽</td><td><span class="status-${b.status}">${b.status}</span></td></tr>`).join('')}</tbody></table></div></div>`; }
+    const categories = [
+        { key: 'all', name: 'Все', icon: 'fa-globe' },{ key: 'bikes', name: 'Велосипеды', icon: 'fa-bicycle' },{ key: 'boats', name: 'Лодки', icon: 'fa-ship' },{ key: 'sup', name: 'SUP-борды', icon: 'fa-water' },{ key: 'trekking', name: 'Туризм', icon: 'fa-campground' },{ key: 'wetsuit', name: 'Гидрокостюмы', icon: 'fa-tshirt' },{ key: 'climbing', name: 'Скалолазание', icon: 'fa-mountain' },{ key: 'fitness', name: 'Фитнес', icon: 'fa-dumbbell' },{ key: 'winter', name: 'Зимний спорт', icon: 'fa-snowboarding' },{ key: 'kids', name: 'Детское', icon: 'fa-child' }
+    ];
 
-        function openBooking(itemId) { const item = getInventory().find(i => i.id === itemId); if (!item || item.available <= 0) { showToast('Товар недоступен', 'error'); return; } currentBookingItem = item; document.getElementById('bookingItemName').textContent = item.name + ' — ' + item.price + ' ₽/день'; ['startDate', 'endDate', 'customerPhone', 'comment'].forEach(id => document.getElementById(id).value = ''); const currentUser = getCurrentUser(); const nameField = document.getElementById('customerName'); if (currentUser && currentUser.name) { nameField.value = currentUser.name; } else { nameField.value = ''; } document.getElementById('totalPrice').textContent = '0 ₽'; document.getElementById('daysCount').textContent = '0'; openModal('bookingModal'); }
+    const mainInventory = [
+        { name: "Велосипеды", icon: "fas fa-bicycle", count: "57+", desc: "Горные, шоссейные, BMX", price: "от 500₽", key: "bikes" },{ name: "Лодки и байдарки", icon: "fas fa-ship", count: "23", desc: "Одноместные, каяки", price: "от 900₽", key: "boats" },{ name: "SUP-борды", icon: "fas fa-water", count: "18", desc: "Надувные доски", price: "от 900₽", key: "sup" },{ name: "Туризм", icon: "fas fa-campground", count: "60", desc: "Палатки, спальники, рюкзаки", price: "от 400₽", key: "trekking" },{ name: "Гидрокостюмы", icon: "fas fa-tshirt", count: "45", desc: "3/5 мм неопрен", price: "от 600₽", key: "wetsuit" },{ name: "Скалолазание", icon: "fas fa-mountain", count: "30", desc: "Обвязки, каски, верёвки", price: "от 550₽", key: "climbing" }
+    ];
 
-        function calculatePrice() { const start = document.getElementById('startDate').value; const end = document.getElementById('endDate').value; if (start && end && currentBookingItem) { const sd = new Date(start), ed = new Date(end); if (ed > sd) { const days = Math.ceil((ed - sd) / (1000 * 60 * 60 * 24)); document.getElementById('daysCount').textContent = days; document.getElementById('totalPrice').textContent = (days * currentBookingItem.price).toLocaleString() + ' ₽'; } else { document.getElementById('daysCount').textContent = '0'; document.getElementById('totalPrice').textContent = '0 ₽'; } } }
+    const blogArticles = [
+        { id: 1, title: "Топ-5 горных велосипедов 2026", icon: "fa-bicycle", date: "15 мая 2026", excerpt: "Сравнили модели Merida, Trek и Cannondale. Какой выбрать для пересечённой местности?", content: "После тщательного тестирования мы выбрали лучшие горные велосипеды 2026 года. Лидером стал Merida Big Nine — отличная геометрия рамы, надёжные дисковые тормоза Shimano и вилка RockShox. На втором месте Trek Marlin 7 — легендарная надёжность и комфорт. Cannondale Trail занял третье место благодаря карбоновой раме и малому весу. Для новичков рекомендуем Stels Navigator — бюджетный, но качественный вариант. И замыкает пятёрку Giant Talon — универсальный велосипед для города и леса." },
+        { id: 2, title: "Байдарочный маршрут по Вуоксе", icon: "fa-water", date: "3 июня 2026", excerpt: "Полный гайд по трёхдневному сплаву с семьёй. Где ночевать и что взять с собой.", content: "Маршрут по реке Вуокса — идеальный вариант для семейного сплава. Стартуем от посёлка Лосево, финишируем через 45 км в Приозерске. На маршруте есть оборудованные стоянки с костровищами. Обязательно возьмите с собой: палатку с тентом, спальники с температурой комфорта +5°C, газовую горелку, репелленты и дождевики. Уровень воды в июне комфортный, пороги проходимы даже для новичков. Наша команда арендует байдарки «Таймень-2» — они устойчивы и вместительны." },
+        { id: 3, title: "Как выбрать гантели для дома", icon: "fa-dumbbell", date: "20 мая 2026", excerpt: "Разборные или фиксированные? Сравнение весов и материалов для фитнеса дома.", content: "Для домашних тренировок оптимальны разборные гантели с набором блинов от 2.5 до 10 кг. Они занимают мало места и позволяют прогрессировать в нагрузке. Виниловые гантели подойдут для аэробики, а чугунные — для силовых тренировок. Обратите внимание на гриф: диаметр 25 мм подходит для стандартных блинов. В нашем прокате есть комплекты с блинами 2.5, 5 и 10 кг — идеально для начала." }
+    ];
 
-        function submitBooking() { const name = document.getElementById('customerName').value.trim(); const phone = document.getElementById('customerPhone').value.trim(); const start = document.getElementById('startDate').value; const end = document.getElementById('endDate').value; if (!name) { showToast('Введите имя', 'error'); return; } if (!phone || phone.replace(/\D/g, '').length < 11) { showToast('Введите полный номер телефона', 'error'); return; } if (!start || !end) { showToast('Выберите даты', 'error'); return; } const sd = new Date(start), ed = new Date(end); if (ed <= sd) { showToast('Дата окончания должна быть позже', 'error'); return; } const days = Math.ceil((ed - sd) / (1000 * 60 * 60 * 24)); const totalPrice = days * currentBookingItem.price; pendingBookingData = { itemId: currentBookingItem.id, itemName: currentBookingItem.name, customerName: name, customerPhone: phone, startDate: start, endDate: end, days, totalPrice, comment: document.getElementById('comment').value.trim() }; closeModal('bookingModal'); showQRModal(totalPrice); }
+    let currentPage = 'home';
+    let currentBookingItem = null;
+    let currentFilter = 'all';
+    let catalogViewMode = 'grid';
+    let expandedCats = false;
+    let pendingBookingData = null;
 
-        function showQRModal(amount) { document.getElementById('qrAmount').textContent = amount.toLocaleString() + ' ₽'; document.getElementById('paymentStatus').textContent = ''; document.getElementById('qrcode').innerHTML = ''; document.getElementById('simulatePaymentBtn').disabled = false; new QRCode(document.getElementById('qrcode'), { text: `sportarenda://payment?order=pending&sum=${amount}`, width: 180, height: 180, colorDark: '#1a4a3a', colorLight: '#ffffff' }); openModal('qrModal'); document.getElementById('simulatePaymentBtn').onclick = function() { document.getElementById('paymentStatus').textContent = '⏳ Обработка платежа...'; document.getElementById('simulatePaymentBtn').disabled = true; setTimeout(() => { if (pendingBookingData) { const booking = addBooking(pendingBookingData); document.getElementById('paymentStatus').textContent = '✅ Оплата прошла успешно! Заказ добавлен в "Мои заказы".'; document.getElementById('paymentStatus').style.color = '#2d6a4f'; showToast('✅ Заказ #' + booking.id + ' успешно оформлен!'); pendingBookingData = null; } }, 2000); }; }
-
-        function cancelBookingAction(bookingId) { if (confirm('Отменить это бронирование?')) { if (cancelBooking(bookingId)) { showToast('Бронирование отменено'); navigateTo('history'); } } }
-
-        function addItemAction() { const name = document.getElementById('newItemName')?.value.trim(); const price = parseInt(document.getElementById('newItemPrice')?.value); const category = document.getElementById('newItemCategory')?.value; const total = parseInt(document.getElementById('newItemCount')?.value) || 1; const desc = document.getElementById('newItemDesc')?.value.trim() || 'Новый товар'; const icon = document.getElementById('newItemIcon')?.value || 'fa-box'; if (!name || !price) { showToast('Заполните название и цену', 'error'); return; } addInventoryItem({ name, price, category, total, desc, icon }); showToast('✅ Товар добавлен!'); navigateTo('admin'); }
-
-        function deleteItemAction(id) { if (confirm('Удалить товар #' + id + '?')) { deleteInventoryItem(id); showToast('Товар удалён'); navigateTo('admin'); } }
-
-        function initAdminHandlers() { document.getElementById('addItemBtn')?.addEventListener('click', addItemAction); document.querySelectorAll('.delete-item-btn').forEach(btn => { btn.addEventListener('click', () => deleteItemAction(parseInt(btn.dataset.id))); }); }
-
-        function toggleAuthForm() { const loginForm = document.getElementById('loginForm'); const registerForm = document.getElementById('registerForm'); if (loginForm.style.display === 'none') { loginForm.style.display = 'block'; registerForm.style.display = 'none'; } else { loginForm.style.display = 'none'; registerForm.style.display = 'block'; } }
-
-        function initAuthHandlers() {
-            document.getElementById('loginBtn')?.addEventListener('click', () => { const phone = document.getElementById('loginPhone').value.replace(/\D/g, ''); const password = document.getElementById('loginPassword').value; const errEl = document.getElementById('loginError'); if (!phone || !password) { errEl.textContent = 'Заполните все поля'; errEl.classList.add('show'); return; } if (phone.length < 11) { errEl.textContent = 'Введите полный номер телефона'; errEl.classList.add('show'); return; } const result = loginUser(phone, password); if (result.success) { showToast('✅ Вход выполнен!'); updateHeader(); navigateTo('home'); } else { errEl.textContent = result.message; errEl.classList.add('show'); } });
-            document.getElementById('registerBtn')?.addEventListener('click', () => { const name = document.getElementById('regName').value.trim(); const phone = document.getElementById('regPhone').value.replace(/\D/g, ''); const password = document.getElementById('regPassword').value; const errEl = document.getElementById('regError'); if (!name || !phone || !password) { errEl.textContent = 'Заполните все поля'; errEl.classList.add('show'); return; } if (!document.getElementById('agreeCheckbox').checked) { errEl.textContent = 'Необходимо согласие на обработку персональных данных'; errEl.classList.add('show'); return; } if (name.length < 2) { errEl.textContent = 'Имя должно содержать минимум 2 символа'; errEl.classList.add('show'); return; } if (phone.length < 11) { errEl.textContent = 'Введите полный номер телефона'; errEl.classList.add('show'); return; } if (password.length < 4) { errEl.textContent = 'Пароль должен быть не менее 4 символов'; errEl.classList.add('show'); return; } const result = registerUser(name, phone, password); if (result.success) { showToast('✅ Регистрация прошла успешно!'); updateHeader(); navigateTo('home'); } else { errEl.textContent = result.message; errEl.classList.add('show'); } });
-            document.getElementById('loginPhone')?.addEventListener('input', applyPhoneMask);
-            document.getElementById('regPhone')?.addEventListener('input', applyPhoneMask);
+    function updateHeader() {
+        const headerActions = document.getElementById('headerActions');
+        const currentUser = getCurrentUser();
+        const navMyOrders = document.getElementById('navMyOrders');
+        const navHistory = document.getElementById('navHistory');
+        
+        if (currentUser) {
+            const adminBtn = currentUser.isAdmin ? `<button class="header-btn" onclick="navigateTo('admin')" title="Админ-панель"><i class="fas fa-cog"></i> Админ</button>` : '';
+            const logBtn = `<button class="header-btn" onclick="showLogModal()" title="Логи"><i class="fas fa-terminal"></i> Логи</button>`;
+            headerActions.innerHTML = `${logBtn}${adminBtn}<div class="user-header"><span class="user-name" onclick="navigateTo('myorders')"><i class="fas fa-user-circle"></i> ${currentUser.name}</span><button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Выйти</button></div>`;
+            if (navMyOrders) navMyOrders.style.display = 'inline';
+            if (navHistory) navHistory.style.display = 'none';
+        } else {
+            headerActions.innerHTML = `<button class="header-btn" onclick="showLogModal()" title="Логи"><i class="fas fa-terminal"></i> Логи</button><button class="login-header-btn" onclick="navigateTo('auth')"><i class="fas fa-sign-in-alt"></i> Войти</button>`;
+            if (navMyOrders) navMyOrders.style.display = 'none';
+            if (navHistory) navHistory.style.display = 'inline';
         }
+    }
 
-        function applyPhoneMask(e) { let value = e.target.value.replace(/\D/g, ''); if (value.length > 0 && value[0] !== '7') value = '7' + value; if (value.length > 11) value = value.slice(0, 11); let formatted = '+7'; if (value.length > 1) formatted += ' (' + value.slice(1, 4); if (value.length >= 4) formatted += ') ' + value.slice(4, 7); if (value.length >= 7) formatted += '-' + value.slice(7, 9); if (value.length >= 9) formatted += '-' + value.slice(9, 11); e.target.value = formatted; }
+    function handleLogout() { logoutUser(); updateHeader(); showToast('Вы вышли из аккаунта'); navigateTo('home'); }
 
-        function initBlogHandlers() { document.querySelectorAll('.blog-card').forEach(card => { card.addEventListener('click', () => { const article = blogArticles.find(a => a.id === parseInt(card.dataset.articleId)); if (article) { document.getElementById('blogModalContent').innerHTML = `<div style="background:linear-gradient(135deg,var(--primary-light),var(--primary));border-radius:20px;padding:40px;text-align:center;margin-bottom:20px;color:white;"><i class="fas ${article.icon}" style="font-size:3rem;"></i><h2 style="margin-top:12px;">${article.title}</h2><p>${article.date}</p></div><p style="font-size:1.1rem;line-height:1.8;">${article.content}</p>`; openModal('blogModal'); } }); }); }
+    function navigateTo(page) {
+        currentPage = page;
+        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+        const content = document.getElementById('mainContent');
+        const navLinks = document.querySelectorAll('.nav-link');
+        updateHeader();
+        
+        addLog(`📄 НАВИГАЦИЯ: переход на страницу "${page}"`, 'action');
+        
+        switch (page) {
+            case 'home': content.innerHTML = getHomePage(); if (navLinks[0]) navLinks[0].classList.add('active'); break;
+            case 'catalog': content.innerHTML = getCatalogPage(); if (navLinks[1]) navLinks[1].classList.add('active'); break;
+            case 'myorders': content.innerHTML = getMyOrdersPage(); if (navLinks[2]) navLinks[2].classList.add('active'); break;
+            case 'history': content.innerHTML = getHistoryPage(); if (navLinks[3]) navLinks[3].classList.add('active'); break;
+            case 'about': content.innerHTML = getAboutPage(); if (navLinks[4]) navLinks[4].classList.add('active'); break;
+            case 'support': content.innerHTML = getSupportPage(); if (navLinks[5]) navLinks[5].classList.add('active'); break;
+            case 'blog': content.innerHTML = getBlogPage(); if (navLinks[6]) navLinks[6].classList.add('active'); break;
+            case 'auth': content.innerHTML = getAuthPage(); break;
+            case 'privacy': content.innerHTML = getPrivacyPage(); break;
+            case 'admin': content.innerHTML = getAdminPage(); break;
+        }
+        window.scrollTo(0, 0);
+        if (page === 'home') { setTimeout(initHomeHandlers, 150); setTimeout(animateCounters, 300); }
+        if (page === 'catalog') { currentFilter = 'all'; setTimeout(() => renderCatalog(currentFilter), 150); }
+        if (page === 'auth') setTimeout(initAuthHandlers, 150);
+        if (page === 'admin') setTimeout(initAdminHandlers, 150);
+        if (page === 'blog') setTimeout(initBlogHandlers, 150);
+        if (page === 'myorders' || page === 'history') setTimeout(initHistoryHandlers, 150);
+    }
 
-        function initHistoryHandlers() { document.querySelectorAll('.cancel-booking-btn').forEach(btn => { btn.addEventListener('click', () => cancelBookingAction(parseInt(btn.dataset.id))); }); }
-
-        function toggleCategories() { expandedCats = !expandedCats; const grid = document.getElementById('categoryGrid'); const btn = document.getElementById('toggleMoreCats'); if (grid && btn) { const catsToShow = expandedCats ? categories.slice(1) : categories.slice(1, 7); grid.innerHTML = catsToShow.map(cat => `<div class="cat-item" data-cat-key="${cat.key}"><i class="fas ${cat.icon}"></i><h4>${cat.name}</h4><p>Выбрать</p></div>`).join(''); btn.textContent = expandedCats ? 'Скрыть категории' : 'Показать ещё категории'; initHomeHandlers(); } }
-
-        function initHomeHandlers() { document.querySelectorAll('.cat-item').forEach(el => { el.addEventListener('click', () => { const key = el.dataset.catKey; if (key) { navigateTo('catalog'); setTimeout(() => renderCatalog(key), 300); } }); }); document.querySelectorAll('.equip-card[data-category-key]').forEach(card => { card.addEventListener('click', () => { const key = card.dataset.categoryKey; if (key) { navigateTo('catalog'); setTimeout(() => renderCatalog(key), 300); } }); }); }
-
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-        function showToast(msg, type = 'success') { const toast = document.getElementById('toastMsg'); toast.textContent = msg; toast.className = 'toast-msg'; if (type === 'error') toast.classList.add('error'); toast.classList.add('show'); clearTimeout(toast._timeout); toast._timeout = setTimeout(() => toast.classList.remove('show'), 3000); }
-
-        function isValidEmail(email) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email); }
-
-        function handleSubscribe(emailInput) { const email = emailInput.value.trim(); const errorEl = document.getElementById('emailError'); if (!email || !isValidEmail(email)) { if (errorEl) errorEl.classList.add('show'); emailInput.classList.add('error'); showToast('Введите корректный email', 'error'); return; } if (errorEl) errorEl.classList.remove('show'); emailInput.classList.remove('error'); console.log('📩 НОВАЯ ПОДПИСКА НА РАССЫЛКУ:'); console.log('   Email:', email); console.log('   Дата:', new Date().toLocaleString()); console.log('   Статус: успешно подписан'); showToast('📩 Подписка оформлена!'); emailInput.value = ''; }
-
-        function setupPhoneMaskForBooking() { const phoneInput = document.getElementById('customerPhone'); if (!phoneInput) return; phoneInput.addEventListener('input', applyPhoneMask); }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            if (isCookiesAccepted()) document.getElementById('cookieConsent').classList.add('hidden');
-            updateHeader();
-            navigateTo('home');
-            document.getElementById('subscribeBtn').addEventListener('click', () => handleSubscribe(document.getElementById('subsEmail')));
-            document.getElementById('subsEmail').addEventListener('input', function() { this.classList.remove('error'); document.getElementById('emailError')?.classList.remove('show'); });
-            document.getElementById('startDate').addEventListener('change', calculatePrice);
-            document.getElementById('endDate').addEventListener('change', calculatePrice);
-            document.getElementById('submitBookingBtn').addEventListener('click', submitBooking);
-            setupPhoneMaskForBooking();
-            document.querySelectorAll('.modal').forEach(modal => { modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); }); });
+    function animateCounters() {
+        const counters = document.querySelectorAll('.stat-item h3');
+        counters.forEach(counter => {
+            const target = parseInt(counter.textContent);
+            if (isNaN(target)) return;
+            let current = 0;
+            const increment = target / 50;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) { counter.textContent = target + '+'; clearInterval(timer); }
+                else { counter.textContent = Math.floor(current) + '+'; }
+            }, 30);
         });
-    </script>
+    }
+
+    function getHomePage() {
+        return `<div class="hero-wrapper"><div class="container"><div class="hero"><div class="hero-content"><div class="hero-badge"><i class="fas fa-bicycle"></i> Активный отдых без границ</div><h1>Аренда снаряжения для любых приключений</h1><p>Велосипеды, байдарки, горное снаряжение и полный комплект для активного туризма.</p><div class="btn-group"><button class="btn-primary" onclick="navigateTo('catalog')"><i class="fas fa-list"></i> Каталог</button></div></div><div class="hero-stats"><div class="stats-grid"><div class="stat-item"><h3>120+</h3><p>ед. техники</p></div><div class="stat-item"><h3>98%</h3><p>довольных клиентов</p></div><div class="stat-item"><h3>24/7</h3><p>поддержка</p></div><div class="stat-item"><h3>5 звёзд</h3><p>на картах</p></div></div></div></div></div></div><div class="container" style="padding-top:30px;"><div class="section-title">🏕️ Топ-снаряжение для активного сезона</div><p style="margin-bottom:16px;color:#2c5a47;">Выберите инвентарь — от лёгких прогулок до экстремальных маршрутов</p><div class="equipment-grid" id="inventoryList">${mainInventory.map(item => `<div class="equip-card" data-category-key="${item.key}"><div class="equip-icon"><i class="${item.icon}"></i></div><h3>${item.name}</h3><div class="equip-count">${item.count}</div><div class="equip-desc">${item.desc}</div><div style="font-weight:700;color:#2d6a4f;">${item.price}</div></div>`).join('')}</div><div class="section-title">🧭 Каталог по видам спорта</div><div class="cat-grid" id="categoryGrid">${categories.slice(1,7).map(cat => `<div class="cat-item" data-cat-key="${cat.key}"><i class="fas ${cat.icon}"></i><h4>${cat.name}</h4><p>Выбрать</p></div>`).join('')}</div><div class="show-more-cats"><button class="btn-show-more" id="toggleMoreCats" onclick="toggleCategories()">Показать ещё категории</button></div></div>`;
+    }
+
+    function getCatalogPage() { 
+        return `<div class="container" style="padding:30px 0;"><h2 style="font-size:2rem;margin-bottom:20px;">📦 Каталог снаряжения</h2><div class="filter-bar" id="filterBar">${categories.map(cat => `<button class="filter-btn ${cat.key==='all'?'active':''}" data-filter="${cat.key}" onclick="renderCatalog('${cat.key}')"><i class="fas ${cat.icon}"></i> ${cat.name}</button>`).join('')}<div class="view-toggle"><button class="${catalogViewMode==='grid'?'active':''}" onclick="switchViewMode('grid')"><i class="fas fa-th"></i></button><button class="${catalogViewMode==='list'?'active':''}" onclick="switchViewMode('list')"><i class="fas fa-list"></i></button></div></div><div id="catalogContainer"></div></div>`; 
+    }
+
+    function switchViewMode(mode) {
+        catalogViewMode = mode;
+        addLog(`🔄 ПЕРЕКЛЮЧЕНИЕ РЕЖИМА КАТАЛОГА: ${mode === 'grid' ? 'сетка' : 'список'}`, 'action');
+        document.querySelectorAll('.view-toggle button').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.view-toggle button .fa-${mode === 'grid' ? 'th' : 'list'}`)?.parentElement.classList.add('active');
+        renderCatalog(currentFilter);
+    }
+
+    function renderCatalog(filterKey) { 
+        currentFilter = filterKey; 
+        const inventory = getInventory(); 
+        const filtered = filterKey === 'all' ? inventory : inventory.filter(i => i.category === filterKey); 
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === filterKey)); 
+        const container = document.getElementById('catalogContainer'); 
+        if (!container) return;
+        
+        addLog(`🔍 ФИЛЬТР КАТАЛОГА: "${filterKey}" - найдено ${filtered.length} товаров`, 'action');
+        
+        if (catalogViewMode === 'grid') {
+            container.innerHTML = `<div class="equipment-grid">${filtered.map(item => renderCard(item, false)).join('')}</div>`;
+        } else {
+            container.innerHTML = `<div class="equipment-list">${filtered.map(item => renderCard(item, true)).join('')}</div>`;
+        }
+        
+        document.querySelectorAll('.rent-btn').forEach(btn => { 
+            if (!btn.disabled) btn.addEventListener('click', function(e) { 
+                e.stopPropagation(); 
+                e.preventDefault(); 
+                openBooking(parseInt(this.dataset.id)); 
+            }); 
+        }); 
+    }
+    
+    function renderCard(item, isListView) {
+        const listClass = isListView ? ' list-view' : '';
+        return `<div class="equip-card${listClass}" style="${isListView ? 'height:auto;' : 'height:340px;'}"><div class="equip-icon"><i class="fas ${item.icon||'fa-box'}"></i></div><div><h3>${item.name}</h3><div class="equip-desc">${item.desc}</div></div><div class="equip-count" style="font-size:1.4rem;">${item.price} ₽/день</div><p style="color:#666;font-size:0.85rem;">Доступно: ${item.available} из ${item.total}</p><button class="btn-primary rent-btn" data-id="${item.id}" ${item.available===0?'disabled style="opacity:0.5;cursor:not-allowed;"':''}>${item.available===0?'Нет в наличии':'Арендовать'}</button></div>`;
+    }
+
+    function getMyOrdersPage() {
+        const currentUser = getCurrentUser();
+        if (!currentUser) return `<div class="container" style="padding:60px 0;text-align:center;"><i class="fas fa-user-lock" style="font-size:4rem;color:#ccc;"></i><h2 style="margin:20px 0;">Доступ только для авторизованных</h2><p style="margin-bottom:20px;">Войдите в аккаунт для просмотра своих заказов</p><button class="btn-primary" onclick="navigateTo('auth')">Войти</button></div>`;
+        
+        // Очищаем номер пользователя
+        const userPhoneClean = currentUser.phone.replace(/\D/g, '');
+        
+        const bookings = getBookings().filter(b => {
+            const bookingPhoneClean = b.customerPhone.replace(/\D/g, '');
+            return bookingPhoneClean === userPhoneClean;
+        });
+        
+        addLog(`📋 ПРОСМОТР МОИХ ЗАКАЗОВ: пользователь "${currentUser.name}" (тел: ${userPhoneClean}), найдено ${bookings.length} заказов`, 'action');
+        
+        if (bookings.length === 0) return `<div class="container" style="padding:60px 0;text-align:center;"><i class="fas fa-clipboard-list" style="font-size:4rem;color:#ccc;"></i><h2 style="margin:20px 0;">Нет бронирований</h2><p style="margin-bottom:20px;">Вы ещё ничего не забронировали</p><button class="btn-primary" onclick="navigateTo('catalog')">Перейти в каталог</button></div>`;
+        
+        return `<div class="container" style="padding:30px 0;"><h2>📋 Мои заказы</h2><p style="color:var(--gray);margin-bottom:20px;">Заказы пользователя: <strong>${currentUser.name}</strong> (тел: ${currentUser.phone})</p><table class="data-table"><thead><tr><th>Товар</th><th>Дата начала</th><th>Дата оконч.</th><th>Дней</th><th>Сумма</th><th>Статус</th><th></th></tr></thead><tbody>${bookings.map(b => `<tr><td><strong>${b.itemName}</strong></td><td>${b.startDate}</td><td>${b.endDate}</td><td>${b.days}</td><td>${b.totalPrice} ₽</td><td><span class="status-${b.status}">${b.status==='active'?'Активно':b.status==='pending-cancel'?'Ожидает отмены':b.status==='cancelled'?'Отменено':'Завершено'}</span></td><td>${b.status==='active'?`<button class="btn-danger cancel-booking-btn" data-id="${b.id}">Отменить</button>`:'-'}</td></tr>`).join('')}</tbody></table></div>`;
+    }
+
+    function getHistoryPage() { 
+        const bookings = getBookings(); 
+        addLog(`📜 ПРОСМОТР ИСТОРИИ ЗАКАЗОВ: всего ${bookings.length} записей`, 'action');
+        if (bookings.length === 0) return `<div class="container" style="padding:60px 0;text-align:center;"><i class="fas fa-history" style="font-size:4rem;color:#ccc;"></i><h2 style="margin:20px 0;">История пуста</h2><p style="margin-bottom:20px;">В системе пока нет заказов</p><button class="btn-primary" onclick="navigateTo('catalog')">Перейти в каталог</button></div>`; 
+        return `<div class="container" style="padding:30px 0;"><h2>📜 История заказов</h2><table class="data-table"><thead><tr><th>Товар</th><th>Клиент</th><th>Телефон</th><th>Дата начала</th><th>Дата оконч.</th><th>Дней</th><th>Сумма</th><th>Статус</th></tr></thead><tbody>${bookings.map(b => `<tr><td><strong>${b.itemName}</strong></td><td>${b.customerName}</td><td>${b.customerPhone}</td><td>${b.startDate}</td><td>${b.endDate}</td><td>${b.days}</td><td>${b.totalPrice} ₽</td><td><span class="status-${b.status}">${b.status==='active'?'Активно':b.status==='pending-cancel'?'Ожидает отмены':b.status==='cancelled'?'Отменено':'Завершено'}</span></td></tr>`).join('')}</tbody></table></div>`; 
+    }
+
+    function getAboutPage() { return `<div class="container info-page"><h2>О нас</h2><p style="font-size:1.1rem;margin-bottom:30px;">СпортАренда — команда профессионалов, влюблённых в активный образ жизни.</p><div class="info-card"><h3><i class="fas fa-users"></i> Наш коллектив</h3><p>Нас 25 человек: от инструкторов по водным видам до механиков велосипедов.</p></div><div class="info-card"><h3><i class="fas fa-clock"></i> Расписание работы</h3><p><strong>Пункты проката:</strong> ежедневно с 8:00 до 22:00</p></div><div class="info-card"><h3><i class="fas fa-map-marker-alt"></i> Пункты проката</h3><p><strong>Москва:</strong> ул. Лужники, 24, стр. 1</p></div></div>`; }
+
+    function getSupportPage() { return `<div class="container info-page"><h2>Поддержка</h2><p style="font-size:1.1rem;margin-bottom:30px;">Мы всегда рядом, чтобы помочь вам.</p><div class="info-card"><h3><i class="fas fa-question-circle"></i> Часто задаваемые вопросы</h3><div class="faq-item"><h4>Как забронировать?</h4><p>Выберите товар в каталоге, заполните форму и оплатите.</p></div><div class="faq-item"><h4>Какие документы нужны?</h4><p>Паспорт или водительское удостоверение.</p></div></div></div>`; }
+
+    function getBlogPage() { return `<div class="container info-page"><h2>Блог</h2><p style="font-size:1.1rem;margin-bottom:30px;">Новости, советы и лучшие маршруты.</p><div class="blog-grid">${blogArticles.map(article => `<div class="blog-card" data-article-id="${article.id}"><div class="blog-card-img"><i class="fas ${article.icon}"></i></div><div class="blog-card-body"><h4>${article.title}</h4><p>${article.excerpt}</p><p style="color:#6b7f8f;font-size:0.85rem;">${article.date}</p></div></div>`).join('')}</div></div>`; }
+
+    function getAuthPage() {
+        return `<div class="auth-page-wrapper"><div class="auth-card" id="loginForm"><h2>Вход</h2><p class="auth-subtitle">Войдите в свой аккаунт для управления заказами</p><p style="font-size:0.8rem;color:var(--gray);margin-bottom:12px;">👑 Админ: тел. 0000000000 или 7000000000 / пароль Admin123</p><div class="form-group"><label>Номер телефона:</label><input type="tel" id="loginPhone" placeholder="+7 (___) ___-__-__" maxlength="18"></div><div class="form-group"><label>Пароль:</label><input type="password" id="loginPassword" placeholder="Введите пароль"></div><p class="auth-error" id="loginError"></p><button class="auth-btn" id="loginBtn">Войти</button><p class="auth-switch">Нет аккаунта? <span onclick="toggleAuthForm()">Зарегистрироваться</span></p></div><div class="auth-card" id="registerForm" style="display:none;"><h2>Регистрация</h2><p class="auth-subtitle">Создайте аккаунт для бронирования снаряжения</p><div class="form-group"><label>Ваше имя:</label><input type="text" id="regName" placeholder="Иван Иванов"></div><div class="form-group"><label>Номер телефона:</label><input type="tel" id="regPhone" placeholder="+7 (___) ___-__-__" maxlength="18"></div><div class="form-group"><label>Придумайте пароль:</label><input type="password" id="regPassword" placeholder="Минимум 4 символа"></div><div class="form-group"><label class="agree-label"><input type="checkbox" id="agreeCheckbox"> Я согласен на обработку <span style="color:var(--primary);cursor:pointer;text-decoration:underline;" onclick="navigateTo('privacy')">персональных данных</span></label></div><p class="auth-error" id="regError"></p><button class="auth-btn" id="registerBtn">Зарегистрироваться</button><p class="auth-switch">Уже есть аккаунт? <span onclick="toggleAuthForm()">Войти</span></p></div></div>`;
+    }
+
+    function getPrivacyPage() { return `<div class="container info-page"><h2>Политика конфиденциальности</h2><div class="info-card"><h3>1. Сбор данных</h3><p>Мы собираем только необходимые данные: имя, телефон, email.</p><h3>2. Хранение данных</h3><p>Все данные хранятся в локальном хранилище браузера (localStorage).</p><h3>3. Cookie-файлы</h3><p>Мы используем cookie-файлы для сохранения настроек.</p></div><h2 style="margin-top:40px;">Обработка персональных данных</h2><div class="info-card"><h3>1. Какие данные мы собираем</h3><p>При регистрации: имя, номер телефона. При бронировании: имя, телефон, комментарий. При подписке: email.</p><h3>2. Цели обработки</h3><p>Данные используются для оформления заказов и связи с вами.</p><h3>3. Хранение</h3><p>Данные хранятся в localStorage и не передаются на сервер.</p><h3>4. Согласие</h3><p>Используя сайт, вы даёте согласие на обработку данных по ФЗ-152.</p></div></div>`; }
+
+    function getAdminPage() { 
+        const currentUser = getCurrentUser();
+        if (!currentUser || !currentUser.isAdmin) {
+            addLog('🚫 ПОПЫТКА ДОСТУПА К АДМИН-ПАНЕЛИ без прав администратора', 'error');
+            return `<div class="container" style="padding:60px 0;text-align:center;"><i class="fas fa-shield-alt" style="font-size:4rem;color:#ccc;"></i><h2 style="margin:20px 0;">Доступ запрещён</h2><p style="margin-bottom:20px;">Только для администратора</p></div>`;
+        }
+        
+        const inventory = getInventory(); 
+        const bookings = getBookings(); 
+        const iconOptions = availableIcons.map(ic => `<option value="${ic.class}">${ic.label} (${ic.class})</option>`).join(''); 
+        const pendingCancellations = bookings.filter(b => b.status === 'pending-cancel');
+        
+        addLog(`⚙️ ВХОД В АДМИН-ПАНЕЛЬ: ${inventory.length} товаров, ${bookings.length} заказов, ${pendingCancellations.length} ожидают отмены`, 'action');
+        
+        return `<div class="container" style="padding:30px 0;"><h2>⚙️ Админ-панель</h2>
+        ${pendingCancellations.length > 0 ? `<div class="admin-panel" style="border-left: 4px solid var(--warning);"><h3><i class="fas fa-exclamation-triangle"></i> Ожидают подтверждения отмены (${pendingCancellations.length})</h3><table class="data-table"><thead><tr><th>ID</th><th>Товар</th><th>Клиент</th><th>Телефон</th><th>Даты</th><th>Сумма</th><th></th></tr></thead><tbody>${pendingCancellations.map(b => `<tr><td>#${b.id}</td><td>${b.itemName}</td><td>${b.customerName}</td><td>${b.customerPhone}</td><td>${b.startDate} → ${b.endDate}</td><td>${b.totalPrice} ₽</td><td><button class="btn-warning confirm-cancel-btn" data-id="${b.id}">Подтвердить отмену</button></td></tr>`).join('')}</tbody></table></div>` : ''}
+        <div class="admin-panel"><h3><i class="fas fa-plus-circle"></i> Добавить товар</h3><div class="form-row"><div class="form-group"><label>Название:</label><input type="text" id="newItemName" placeholder="Название товара" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;"></div><div class="form-group"><label>Цена (₽/день):</label><input type="number" id="newItemPrice" placeholder="Цена" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;"></div></div><div class="form-row"><div class="form-group"><label>Категория:</label><select id="newItemCategory" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;">${categories.filter(c=>c.key!=='all').map(c=>`<option value="${c.key}">${c.name}</option>`).join('')}</select></div><div class="form-group"><label>Количество:</label><input type="number" id="newItemCount" value="1" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;"></div></div><div class="form-row"><div class="form-group"><label>Описание:</label><input type="text" id="newItemDesc" placeholder="Краткое описание" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;"></div><div class="form-group"><label>Иконка:</label><select id="newItemIcon" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;">${iconOptions}</select></div></div><button class="btn-primary" id="addItemBtn"><i class="fas fa-save"></i> Добавить товар</button></div><div class="admin-panel"><h3><i class="fas fa-boxes"></i> Инвентарь (${inventory.length} товаров)</h3><table class="data-table"><thead><tr><th>Название</th><th>Категория</th><th>Цена</th><th>Всего</th><th>Доступно</th><th></th></tr></thead><tbody>${inventory.map(item=>`<tr><td>${item.name}</td><td>${categories.find(c=>c.key===item.category)?.name||item.category}</td><td>${item.price} ₽</td><td>${item.total}</td><td>${item.available}</td><td><button class="btn-danger delete-item-btn" data-id="${item.id}">Удалить</button></td></tr>`).join('')}</tbody></table></div><div class="admin-panel"><h3><i class="fas fa-clipboard-list"></i> Все заказы (${bookings.length})</h3><table class="data-table"><thead><tr><th>Товар</th><th>Клиент</th><th>Даты</th><th>Сумма</th><th>Статус</th></tr></thead><tbody>${bookings.map(b=>`<tr><td>${b.itemName}</td><td>${b.customerName}</td><td>${b.startDate} → ${b.endDate}</td><td>${b.totalPrice} ₽</td><td><span class="status-${b.status}">${b.status==='active'?'Активно':b.status==='pending-cancel'?'Ожидает отмены':b.status==='cancelled'?'Отменено':'Завершено'}</span></td></tr>`).join('')}</tbody></table></div></div>`; 
+    }
+
+    function openBooking(itemId) { 
+        const item = getInventory().find(i => i.id === itemId); 
+        if (!item || item.available <= 0) { 
+            addLog(`❌ ПОПЫТКА БРОНИРОВАНИЯ: товар "${item?.name||'неизвестный'}" недоступен`, 'error');
+            showToast('Товар недоступен', 'error'); 
+            return; 
+        } 
+        currentBookingItem = item; 
+        document.getElementById('bookingItemName').textContent = item.name + ' — ' + item.price + ' ₽/день'; 
+        ['startDate', 'endDate', 'customerPhone', 'comment'].forEach(id => document.getElementById(id).value = ''); 
+        const currentUser = getCurrentUser(); 
+        const nameField = document.getElementById('customerName'); 
+        const phoneField = document.getElementById('customerPhone');
+        if (currentUser && currentUser.name) { 
+            nameField.value = currentUser.name;
+            if (phoneField && currentUser.phone) {
+                // Форматируем телефон для отображения
+                const clean = currentUser.phone.replace(/\D/g, '');
+                if (clean.length === 11) {
+                    phoneField.value = `+7 (${clean.slice(1,4)}) ${clean.slice(4,7)}-${clean.slice(7,9)}-${clean.slice(9,11)}`;
+                } else if (clean.length === 10) {
+                    phoneField.value = `+7 (${clean.slice(0,3)}) ${clean.slice(3,6)}-${clean.slice(6,8)}-${clean.slice(8,10)}`;
+                } else {
+                    phoneField.value = currentUser.phone;
+                }
+            }
+        } else { 
+            nameField.value = ''; 
+        } 
+        document.getElementById('totalPrice').textContent = '0 ₽'; 
+        document.getElementById('daysCount').textContent = '0'; 
+        addLog(`📝 ОТКРЫТА ФОРМА БРОНИРОВАНИЯ: "${item.name}" (${item.price}₽/день, доступно: ${item.available})`, 'action');
+        openModal('bookingModal'); 
+    }
+
+    function calculatePrice() { 
+        const start = document.getElementById('startDate').value; 
+        const end = document.getElementById('endDate').value; 
+        if (start && end && currentBookingItem) { 
+            const sd = new Date(start), ed = new Date(end); 
+            if (ed > sd) { 
+                const days = Math.ceil((ed - sd) / (1000 * 60 * 60 * 24)); 
+                document.getElementById('daysCount').textContent = days; 
+                document.getElementById('totalPrice').textContent = (days * currentBookingItem.price).toLocaleString() + ' ₽'; 
+                addLog(`💰 РАСЧЁТ СТОИМОСТИ: ${days} дней × ${currentBookingItem.price}₽ = ${days * currentBookingItem.price}₽`, 'action');
+            } else { 
+                document.getElementById('daysCount').textContent = '0'; 
+                document.getElementById('totalPrice').textContent = '0 ₽'; 
+            } 
+        } 
+    }
+
+    function submitBooking() { 
+        const name = document.getElementById('customerName').value.trim(); 
+        const phone = document.getElementById('customerPhone').value.trim(); 
+        const start = document.getElementById('startDate').value; 
+        const end = document.getElementById('endDate').value; 
+        if (!name) { showToast('Введите имя', 'error'); addLog('❌ ОШИБКА БРОНИРОВАНИЯ: не указано имя', 'error'); return; } 
+        if (!phone || phone.replace(/\D/g, '').length < 11) { showToast('Введите полный номер телефона', 'error'); addLog('❌ ОШИБКА БРОНИРОВАНИЯ: некорректный телефон', 'error'); return; } 
+        if (!start || !end) { showToast('Выберите даты', 'error'); addLog('❌ ОШИБКА БРОНИРОВАНИЯ: не выбраны даты', 'error'); return; } 
+        const sd = new Date(start), ed = new Date(end); 
+        if (ed <= sd) { showToast('Дата окончания должна быть позже', 'error'); addLog('❌ ОШИБКА БРОНИРОВАНИЯ: дата окончания раньше даты начала', 'error'); return; } 
+        const days = Math.ceil((ed - sd) / (1000 * 60 * 60 * 24)); 
+        const totalPrice = days * currentBookingItem.price; 
+        const currentUser = getCurrentUser();
+        pendingBookingData = { 
+            itemId: currentBookingItem.id, 
+            itemName: currentBookingItem.name, 
+            customerName: name, 
+            customerPhone: phone, 
+            startDate: start, 
+            endDate: end, 
+            days, 
+            totalPrice, 
+            comment: document.getElementById('comment').value.trim(),
+            customerId: currentUser ? currentUser.id : null
+        }; 
+        addLog(`📤 ОТПРАВЛЕНА ФОРМА БРОНИРОВАНИЯ: "${currentBookingItem.name}", клиент: ${name}, тел: ${phone}, даты: ${start} → ${end}, сумма: ${totalPrice}₽`, 'action');
+        closeModal('bookingModal'); 
+        showQRModal(totalPrice); 
+    }
+
+    function showQRModal(amount) { 
+        document.getElementById('qrAmount').textContent = amount.toLocaleString() + ' ₽'; 
+        document.getElementById('paymentStatus').textContent = ''; 
+        document.getElementById('qrcode').innerHTML = ''; 
+        document.getElementById('simulatePaymentBtn').disabled = false; 
+        new QRCode(document.getElementById('qrcode'), { text: `sportarenda://payment?order=pending&sum=${amount}`, width: 180, height: 180, colorDark: '#1a4a3a', colorLight: '#ffffff' }); 
+        addLog(`💳 ОТКРЫТ QR-КОД ДЛЯ ОПЛАТЫ: сумма ${amount}₽`, 'action');
+        openModal('qrModal'); 
+        document.getElementById('simulatePaymentBtn').onclick = function() { 
+            document.getElementById('paymentStatus').textContent = '⏳ Обработка платежа...'; 
+            document.getElementById('simulatePaymentBtn').disabled = true; 
+            addLog('💳 НАЖАТА КНОПКА ОПЛАТЫ (эмуляция)', 'action');
+            setTimeout(() => { 
+                if (pendingBookingData) { 
+                    const booking = addBooking(pendingBookingData); 
+                    document.getElementById('paymentStatus').textContent = '✅ Оплата прошла успешно! Заказ добавлен.'; 
+                    document.getElementById('paymentStatus').style.color = '#2d6a4f'; 
+                    showToast('✅ Заказ #' + booking.id + ' успешно оформлен!'); 
+                    pendingBookingData = null; 
+                } 
+            }, 2000); 
+        }; 
+    }
+
+    function cancelBookingAction(bookingId) { 
+        addLog(`🖱️ НАЖАТА КНОПКА ОТМЕНЫ бронирования #${bookingId}`, 'action');
+        if (confirm('Отменить это бронирование? Отмена будет подтверждена администратором.')) { 
+            if (cancelBooking(bookingId)) { 
+                showToast('Запрос на отмену отправлен администратору'); 
+                navigateTo('myorders'); 
+            } 
+        } 
+    }
+
+    function confirmCancelAction(bookingId) {
+        addLog(`🖱️ АДМИН: нажата кнопка подтверждения отмены бронирования #${bookingId}`, 'action');
+        if (confirm('Подтвердить отмену бронирования #' + bookingId + '?')) {
+            if (confirmCancelBooking(bookingId)) {
+                showToast('✅ Отмена бронирования подтверждена');
+                navigateTo('admin');
+            }
+        }
+    }
+
+    function addItemAction() { 
+        const name = document.getElementById('newItemName')?.value.trim(); 
+        const price = parseInt(document.getElementById('newItemPrice')?.value); 
+        const category = document.getElementById('newItemCategory')?.value; 
+        const total = parseInt(document.getElementById('newItemCount')?.value) || 1; 
+        const desc = document.getElementById('newItemDesc')?.value.trim() || 'Новый товар'; 
+        const icon = document.getElementById('newItemIcon')?.value || 'fa-box'; 
+        if (!name || !price) { showToast('Заполните название и цену', 'error'); addLog('❌ ОШИБКА ДОБАВЛЕНИЯ ТОВАРА: не заполнены обязательные поля', 'error'); return; } 
+        addLog(`🖱️ НАЖАТА КНОПКА ДОБАВЛЕНИЯ ТОВАРА: "${name}"`, 'action');
+        addInventoryItem({ name, price, category, total, desc, icon }); 
+        showToast('✅ Товар добавлен!'); 
+        navigateTo('admin'); 
+    }
+
+    function deleteItemAction(id) { 
+        addLog(`🖱️ НАЖАТА КНОПКА УДАЛЕНИЯ ТОВАРА #${id}`, 'action');
+        if (confirm('Удалить товар #' + id + '?')) { 
+            deleteInventoryItem(id); 
+            showToast('Товар удалён'); 
+            navigateTo('admin'); 
+        } 
+    }
+
+    function initAdminHandlers() { 
+        document.getElementById('addItemBtn')?.addEventListener('click', addItemAction); 
+        document.querySelectorAll('.delete-item-btn').forEach(btn => { 
+            btn.addEventListener('click', () => deleteItemAction(parseInt(btn.dataset.id))); 
+        });
+        document.querySelectorAll('.confirm-cancel-btn').forEach(btn => {
+            btn.addEventListener('click', () => confirmCancelAction(parseInt(btn.dataset.id)));
+        });
+    }
+
+    function toggleAuthForm() { 
+        const loginForm = document.getElementById('loginForm'); 
+        const registerForm = document.getElementById('registerForm'); 
+        if (loginForm.style.display === 'none') { 
+            loginForm.style.display = 'block'; 
+            registerForm.style.display = 'none'; 
+            addLog('🔄 ПЕРЕКЛЮЧЕНИЕ НА ФОРМУ ВХОДА', 'action');
+        } else { 
+            loginForm.style.display = 'none'; 
+            registerForm.style.display = 'block'; 
+            addLog('🔄 ПЕРЕКЛЮЧЕНИЕ НА ФОРМУ РЕГИСТРАЦИИ', 'action');
+        } 
+    }
+
+    function initAuthHandlers() {
+        document.getElementById('loginBtn')?.addEventListener('click', () => { 
+            let phone = document.getElementById('loginPhone').value.replace(/\D/g, ''); 
+            const password = document.getElementById('loginPassword').value; 
+            const errEl = document.getElementById('loginError'); 
+            
+            addLog(`🖱️ НАЖАТА КНОПКА ВХОДА: телефон "${phone}", пароль "***"`, 'action');
+            
+            if (!password) { errEl.textContent = 'Введите пароль'; errEl.classList.add('show'); return; }
+            
+            // Для админа: если пароль Admin123 и телефон пустой/0/0000000000/7000000000
+if (
+    password === 'Admin123' &&
+    (
+        phone === '' ||
+        phone === '0' ||
+        phone === '0000000000' ||
+        phone === '7000000000' ||
+        phone === '70000000000'
+    )
+) {
+    phone = '0000000000';
+}
+            
+            if (!phone || phone.length < 10) { errEl.textContent = 'Введите номер телефона (минимум 10 цифр)'; errEl.classList.add('show'); return; } 
+            
+            const result = loginUser(phone, password); 
+            if (result.success) { 
+                showToast('✅ Вход выполнен!'); 
+                updateHeader(); 
+                navigateTo('home'); 
+            } else { 
+                errEl.textContent = result.message; 
+                errEl.classList.add('show'); 
+            } 
+        });
+        document.getElementById('registerBtn')?.addEventListener('click', () => { 
+            const name = document.getElementById('regName').value.trim(); 
+            const phone = document.getElementById('regPhone').value.replace(/\D/g, ''); 
+            const password = document.getElementById('regPassword').value; 
+            const errEl = document.getElementById('regError'); 
+            
+            addLog(`🖱️ НАЖАТА КНОПКА РЕГИСТРАЦИИ: "${name}", тел: "${phone}"`, 'action');
+            
+            if (!name || !phone || !password) { errEl.textContent = 'Заполните все поля'; errEl.classList.add('show'); return; } 
+            if (!document.getElementById('agreeCheckbox').checked) { errEl.textContent = 'Необходимо согласие на обработку персональных данных'; errEl.classList.add('show'); return; } 
+            if (name.length < 2) { errEl.textContent = 'Имя должно содержать минимум 2 символа'; errEl.classList.add('show'); return; } 
+            if (phone.length < 11) { errEl.textContent = 'Введите полный номер телефона (11 цифр)'; errEl.classList.add('show'); return; } 
+            if (password.length < 4) { errEl.textContent = 'Пароль должен быть не менее 4 символов'; errEl.classList.add('show'); return; } 
+            const result = registerUser(name, phone, password); 
+            if (result.success) { 
+                showToast('✅ Регистрация прошла успешно!'); 
+                updateHeader(); 
+                navigateTo('home'); 
+            } else { 
+                errEl.textContent = result.message; 
+                errEl.classList.add('show'); 
+            } 
+        });
+        document.getElementById('loginPhone')?.addEventListener('input', applyPhoneMask);
+        document.getElementById('regPhone')?.addEventListener('input', applyPhoneMask);
+    }
+
+    function applyPhoneMask(e) { 
+        let value = e.target.value.replace(/\D/g, ''); 
+        if (value.length > 0 && value[0] !== '7') value = '7' + value; 
+        if (value.length > 11) value = value.slice(0, 11); 
+        let formatted = '+7'; 
+        if (value.length > 1) formatted += ' (' + value.slice(1, 4); 
+        if (value.length >= 4) formatted += ') ' + value.slice(4, 7); 
+        if (value.length >= 7) formatted += '-' + value.slice(7, 9); 
+        if (value.length >= 9) formatted += '-' + value.slice(9, 11); 
+        e.target.value = formatted; 
+    }
+
+    function initBlogHandlers() { 
+        document.querySelectorAll('.blog-card').forEach(card => { 
+            card.addEventListener('click', () => { 
+                const article = blogArticles.find(a => a.id === parseInt(card.dataset.articleId)); 
+                if (article) { 
+                    addLog(`📖 ОТКРЫТА СТАТЬЯ БЛОГА: "${article.title}"`, 'action');
+                    document.getElementById('blogModalContent').innerHTML = `<div style="background:linear-gradient(135deg,var(--primary-light),var(--primary));border-radius:20px;padding:40px;text-align:center;margin-bottom:20px;color:white;"><i class="fas ${article.icon}" style="font-size:3rem;"></i><h2 style="margin-top:12px;">${article.title}</h2><p>${article.date}</p></div><p style="font-size:1.1rem;line-height:1.8;">${article.content}</p>`; 
+                    openModal('blogModal'); 
+                } 
+            }); 
+        }); 
+    }
+
+    function initHistoryHandlers() { 
+        document.querySelectorAll('.cancel-booking-btn').forEach(btn => { 
+            btn.addEventListener('click', () => cancelBookingAction(parseInt(btn.dataset.id))); 
+        }); 
+    }
+
+    function toggleCategories() { 
+        expandedCats = !expandedCats; 
+        const grid = document.getElementById('categoryGrid'); 
+        const btn = document.getElementById('toggleMoreCats'); 
+        if (grid && btn) { 
+            const catsToShow = expandedCats ? categories.slice(1) : categories.slice(1, 7); 
+            grid.innerHTML = catsToShow.map(cat => `<div class="cat-item" data-cat-key="${cat.key}"><i class="fas ${cat.icon}"></i><h4>${cat.name}</h4><p>Выбрать</p></div>`).join(''); 
+            btn.textContent = expandedCats ? 'Скрыть категории' : 'Показать ещё категории'; 
+            addLog(`🔄 КАТЕГОРИИ: ${expandedCats ? 'развёрнуты' : 'свёрнуты'}`, 'action');
+            initHomeHandlers(); 
+        } 
+    }
+
+    function initHomeHandlers() { 
+        document.querySelectorAll('.cat-item').forEach(el => { 
+            el.addEventListener('click', () => { 
+                const key = el.dataset.catKey; 
+                if (key) { 
+                    addLog(`🖱️ КЛИК ПО КАТЕГОРИИ: "${key}"`, 'action');
+                    navigateTo('catalog'); 
+                    setTimeout(() => renderCatalog(key), 300); 
+                } 
+            }); 
+        }); 
+        document.querySelectorAll('.equip-card[data-category-key]').forEach(card => { 
+            card.addEventListener('click', () => { 
+                const key = card.dataset.categoryKey; 
+                if (key) { 
+                    addLog(`🖱️ КЛИК ПО КАРТОЧКЕ КАТЕГОРИИ: "${key}"`, 'action');
+                    navigateTo('catalog'); 
+                    setTimeout(() => renderCatalog(key), 300); 
+                } 
+            }); 
+        }); 
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function showToast(msg, type = 'success') { 
+        const toast = document.getElementById('toastMsg'); 
+        toast.textContent = msg; 
+        toast.className = 'toast-msg'; 
+        if (type === 'error') toast.classList.add('error'); 
+        toast.classList.add('show'); 
+        clearTimeout(toast._timeout); 
+        toast._timeout = setTimeout(() => toast.classList.remove('show'), 3000); 
+    }
+
+    function isValidEmail(email) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email); }
+
+    function handleSubscribe(emailInput) { 
+        const email = emailInput.value.trim(); 
+        const errorEl = document.getElementById('emailError'); 
+        addLog(`🖱️ ПОПЫТКА ПОДПИСКИ: email "${email}"`, 'action');
+        if (!email || !isValidEmail(email)) { 
+            if (errorEl) errorEl.classList.add('show'); 
+            emailInput.classList.add('error'); 
+            showToast('Введите корректный email', 'error'); 
+            return; 
+        } 
+        if (errorEl) errorEl.classList.remove('show'); 
+        emailInput.classList.remove('error'); 
+        addLog(`📩 НОВАЯ ПОДПИСКА НА РАССЫЛКУ: ${email}`, 'success');
+        showToast('📩 Подписка оформлена!'); 
+        emailInput.value = ''; 
+    }
+
+    function setupPhoneMaskForBooking() { 
+        const phoneInput = document.getElementById('customerPhone'); 
+        if (!phoneInput) return; 
+        phoneInput.addEventListener('input', applyPhoneMask); 
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (isCookiesAccepted()) document.getElementById('cookieConsent').classList.add('hidden');
+        updateHeader();
+        navigateTo('home');
+        document.getElementById('subscribeBtn').addEventListener('click', () => handleSubscribe(document.getElementById('subsEmail')));
+        document.getElementById('subsEmail').addEventListener('input', function() { this.classList.remove('error'); document.getElementById('emailError')?.classList.remove('show'); });
+        document.getElementById('startDate').addEventListener('change', calculatePrice);
+        document.getElementById('endDate').addEventListener('change', calculatePrice);
+        document.getElementById('submitBookingBtn').addEventListener('click', submitBooking);
+        setupPhoneMaskForBooking();
+        document.querySelectorAll('.modal').forEach(modal => { modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); }); });
+        addLog('🚀 САЙТ ЗАГРУЖЕН', 'info');
+    });
+</script>
 </body>
 </html>

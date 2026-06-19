@@ -1131,9 +1131,9 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
     // ============ БАЗА ДАННЫХ ============
-    const DB_KEY = 'sportArenaDB_v11';
-    const USERS_KEY = 'sportArenaUsers_v8';
-    const CURRENT_USER_KEY = 'sportArenaCurrentUser_v8';
+    const DB_KEY = 'sportArenaDB_v12';
+    const USERS_KEY = 'sportArenaUsers_v9';
+    const CURRENT_USER_KEY = 'sportArenaCurrentUser_v9';
     const COOKIES_ACCEPTED_KEY = 'sportArenaCookiesAccepted';
     const LOGS_KEY = 'sportArenaLogs';
 
@@ -1142,7 +1142,7 @@
     function getLogs() { 
         let logs = localStorage.getItem(LOGS_KEY); 
         if (!logs) {
-            addLog('📋 СИСТЕМА ЛОГИРОВАНИЯ: инициализация нового хранилища логов', 'info');
+            console.log('[LOG] Инициализация нового хранилища логов');
             return [];
         }
         return JSON.parse(logs); 
@@ -1152,22 +1152,22 @@
         localStorage.setItem(LOGS_KEY, JSON.stringify(logs)); 
     }
     
-    function addLog(message, type = 'action') {
+    function addLog(title, details = '', type = 'action') {
         const logs = getLogs();
         const timestamp = new Date().toLocaleString('ru-RU', { 
             year: 'numeric', month: '2-digit', day: '2-digit', 
             hour: '2-digit', minute: '2-digit', second: '2-digit' 
         });
-        const entry = { message, type, timestamp, id: logs.length + 1 };
+        const entry = { title, details, type, timestamp, id: logs.length + 1 };
         logs.push(entry);
         if (logs.length > 500) logs.splice(0, logs.length - 500);
         saveLogs(logs);
-        console.log(`[LOG #${entry.id}] [${type.toUpperCase()}] ${message}`);
+        console.log(`[LOG #${entry.id}] [${type.toUpperCase()}] ${title}${details ? ' → ' + details : ''}`);
     }
 
     function clearLogs() {
         const logs = getLogs();
-        addLog(`🧹 ОЧИСТКА ЛОГОВ: удалено ${logs.length} записей. Вызов функции clearLogs()`, 'warning');
+        addLog('🗑️ Все логи очищены', `Удалено ${logs.length} записей. Вызвана clearLogs()`, 'warning');
         localStorage.setItem(LOGS_KEY, JSON.stringify([]));
         if (document.getElementById('logEntries')) {
             document.getElementById('logEntries').innerHTML = '<p style="color:#999; text-align:center; padding: 20px;">🗑️ Логи очищены. Все предыдущие записи удалены.</p>';
@@ -1194,16 +1194,17 @@
                     
                     return `<div class="log-entry log-${log.type}" style="background:${bgColor}; margin-bottom:6px; border-radius:8px; border-left: 4px solid ${borderColor}; padding: 10px 14px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                            <strong style="color:#333;">[#${log.id}] ${log.timestamp}</strong>
-                            <span style="font-size:0.75rem; background:#eee; padding:2px 8px; border-radius:10px;">${typeLabels[log.type]||log.type}</span>
+                            <strong style="color:#000; font-size:1.05rem; font-weight:700;">${log.title}</strong>
+                            <span style="font-size:0.7rem; background:#eee; padding:2px 8px; border-radius:10px; font-weight:600;">${typeLabels[log.type]||log.type}</span>
                         </div>
-                        <div style="font-size:0.95rem; color:#444;">${log.message}</div>
+                        <div style="font-size:0.8rem; color:#999; margin-bottom:2px;">[#${log.id}] ${log.timestamp}</div>
+                        ${log.details ? `<div style="font-size:0.9rem; color:#555; margin-top:4px; font-style:italic;">↳ ${log.details}</div>` : ''}
                     </div>`;
                 }).join('') + '</div>';
             }
         }
         openModal('logModal');
-        addLog('📊 ОТКРЫТ ПРОСМОТР ЛОГОВ: загружено ' + logs.length + ' записей. Вызвана функция showLogModal()', 'info');
+        addLog('📊 Просмотр логов', `Открыто модальное окно. Загружено ${logs.length} записей. Вызвана showLogModal()`, 'info');
     }
 
     const availableIcons = [
@@ -1247,11 +1248,10 @@
         if (!db) { 
             db = getDefaultDB(); 
             localStorage.setItem(DB_KEY, JSON.stringify(db)); 
-            addLog('🗄️ БАЗА ДАННЫХ: создана новая база с ' + db.inventory.length + ' товарами и ' + db.bookings.length + ' заказами (функция getDefaultDB())', 'info'); 
+            addLog('🗄️ База данных создана', `${db.inventory.length} товаров, ${db.bookings.length} заказов. Вызвана getDefaultDB()`, 'info'); 
             return db; 
         } 
-        const parsed = JSON.parse(db);
-        return parsed; 
+        return JSON.parse(db); 
     }
     
     function saveDB(db) { 
@@ -1259,13 +1259,11 @@
     }
     
     function getInventory() { 
-        const db = getDB();
-        return db.inventory; 
+        return getDB().inventory; 
     }
     
     function getBookings() { 
-        const db = getDB();
-        return db.bookings; 
+        return getDB().bookings; 
     }
 
     function getCategoryAvailableCounts() {
@@ -1299,10 +1297,10 @@
         if (item && item.available > 0) {
             const wasAvailable = item.available;
             item.available--; 
-            addLog(`📦 ОБНОВЛЕНИЕ СКЛАДА: товар "${item.name}" (ID:${item.id}) — доступно стало ${item.available} (было ${wasAvailable}) из ${item.total}`, 'info');
+            addLog('📦 Обновление склада', `"${item.name}" (ID:${item.id}) — доступно: ${wasAvailable} → ${item.available} из ${item.total}`, 'info');
         }
         saveDB(db); 
-        addLog(`✅ БРОНИРОВАНИЕ #${booking.id}: товар "${booking.itemName}" (ID:${booking.itemId}), клиент: ${booking.customerName}, тел: ${booking.customerPhone}, период: ${booking.startDate} → ${booking.endDate} (${booking.days} дн.), сумма: ${booking.totalPrice}₽. Статус: active. Выполнена функция addBooking()`, 'success');
+        addLog('✅ Бронирование создано', `#${booking.id}: "${booking.itemName}", клиент: ${booking.customerName}, тел: ${booking.customerPhone}, ${booking.startDate} → ${booking.endDate} (${booking.days} дн.), сумма: ${booking.totalPrice}₽. Статус: active. Вызвана addBooking()`, 'success');
         return booking; 
     }
 
@@ -1313,10 +1311,10 @@
             booking.status = 'pending-cancel'; 
             booking.cancelRequestedAt = new Date().toISOString();
             saveDB(db); 
-            addLog(`⚠️ ЗАПРОС ОТМЕНЫ #${bookingId}: бронирование "${booking.itemName}" (клиент: ${booking.customerName}, тел: ${booking.customerPhone}). Статус изменён: active → pending-cancel. Вызвана функция cancelBooking()`, 'warning');
+            addLog('⚠️ Запрос на отмену', `#${bookingId}: "${booking.itemName}" (${booking.customerName}). Статус: active → pending-cancel. Вызвана cancelBooking()`, 'warning');
             return true; 
         } 
-        addLog(`❌ ОШИБКА ОТМЕНЫ #${bookingId}: бронирование не найдено или статус "${booking?.status||'не существует'}" (требуется active). Функция cancelBooking() вернула false`, 'error');
+        addLog('❌ Ошибка отмены', `#${bookingId}: статус "${booking?.status||'не найден'}", требуется active. cancelBooking() → false`, 'error');
         return false; 
     }
 
@@ -1330,13 +1328,13 @@
             if (item) { 
                 const wasAvailable = item.available;
                 item.available++; 
-                addLog(`📦 ВОЗВРАТ НА СКЛАД: товар "${item.name}" (ID:${item.id}) — доступно стало ${item.available} (было ${wasAvailable}) из ${item.total}`, 'info');
+                addLog('📦 Возврат на склад', `"${item.name}" (ID:${item.id}) — доступно: ${wasAvailable} → ${item.available} из ${item.total}`, 'info');
             }
             saveDB(db);
-            addLog(`✅ ОТМЕНА ПОДТВЕРЖДЕНА #${bookingId}: бронирование "${booking.itemName}" переведено в статус cancelled. Товар возвращён. Функция confirmCancelBooking()`, 'success');
+            addLog('✅ Отмена подтверждена', `#${bookingId}: "${booking.itemName}" переведено в cancelled. Товар возвращён. Вызвана confirmCancelBooking()`, 'success');
             return true;
         }
-        addLog(`❌ ОШИБКА ПОДТВЕРЖДЕНИЯ #${bookingId}: статус "${booking?.status||'не найден'}" (требуется pending-cancel). Функция confirmCancelBooking() вернула false`, 'error');
+        addLog('❌ Ошибка подтверждения', `#${bookingId}: статус "${booking?.status||'не найден'}", требуется pending-cancel. confirmCancelBooking() → false`, 'error');
         return false;
     }
 
@@ -1347,7 +1345,7 @@
         if (!item.icon) item.icon = 'fa-box'; 
         db.inventory.push(item); 
         saveDB(db); 
-        addLog(`➕ ТОВАР ДОБАВЛЕН: "${item.name}" (ID:${item.id}, кат: ${item.category}, цена: ${item.price}₽/д, кол-во: ${item.total}, доступно: ${item.available}). Функция addInventoryItem()`, 'success'); 
+        addLog('➕ Товар добавлен', `"${item.name}" (ID:${item.id}, кат: ${item.category}, цена: ${item.price}₽/д, кол-во: ${item.total}, доступно: ${item.available}). Вызвана addInventoryItem()`, 'success'); 
     }
     
     function deleteInventoryItem(id) { 
@@ -1355,7 +1353,7 @@
         const item = db.inventory.find(i => i.id === id); 
         db.inventory = db.inventory.filter(i => i.id !== id); 
         saveDB(db); 
-        if (item) addLog(`🗑️ ТОВАР УДАЛЁН: "${item.name}" (ID: ${id}, кат: ${item.category}, было ${item.total} шт.). Функция deleteInventoryItem()`, 'warning'); 
+        if (item) addLog('🗑️ Товар удалён', `"${item.name}" (ID: ${id}, кат: ${item.category}, было ${item.total} шт.). Вызвана deleteInventoryItem()`, 'warning'); 
     }
 
     function getUsers() { 
@@ -1363,14 +1361,14 @@
         if (!users) {
             users = [ADMIN_CREDENTIALS];
             saveUsers(users);
-            addLog('👤 ПОЛЬЗОВАТЕЛИ: инициализация, создан админ (тел: 0000000000, Admin123)', 'info');
+            addLog('👤 Инициализация пользователей', 'Создан аккаунт администратора (тел: 0000000000, пароль: Admin123)', 'info');
             return users;
         }
         users = JSON.parse(users);
         if (!users.find(u => u.isAdmin && u.phone === '0000000000')) {
             users.push(ADMIN_CREDENTIALS);
             saveUsers(users);
-            addLog('👤 АДМИН ВОССТАНОВЛЕН: аккаунт администратора добавлен', 'info');
+            addLog('👤 Администратор восстановлен', 'Аккаунт администратора добавлен в базу пользователей', 'info');
         }
         return users;
     }
@@ -1382,14 +1380,14 @@
     function registerUser(name, phone, password) { 
         const users = getUsers(); 
         if (users.find(u => u.phone === phone)) {
-            addLog(`❌ РЕГИСТРАЦИЯ ОТКЛОНЕНА: телефон ${phone} уже существует в базе. Функция registerUser() вернула ошибку`, 'error');
+            addLog('❌ Регистрация отклонена', `Телефон ${phone} уже зарегистрирован. registerUser() → ошибка`, 'error');
             return { success: false, message: 'Этот номер телефона уже зарегистрирован' }; 
         }
         const newUser = { id: Date.now(), name, phone, password, createdAt: new Date().toISOString(), isAdmin: false }; 
         users.push(newUser); 
         saveUsers(users); 
         localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser)); 
-        addLog(`👤 РЕГИСТРАЦИЯ: "${name}" (ID:${newUser.id}, тел: ${phone}). Пользователь создан и авторизован. Функция registerUser()`, 'success');
+        addLog('👤 Регистрация успешна', `"${name}" (ID:${newUser.id}, тел: ${phone}). Пользователь создан и авторизован. Вызвана registerUser()`, 'success');
         return { success: true, user: newUser }; 
     }
     
@@ -1398,22 +1396,21 @@
         const user = users.find(u => u.phone === phone && u.password === password); 
         if (user) { 
             localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user)); 
-            addLog(`🔑 ВХОД: "${user.name}" (${user.isAdmin ? 'Администратор' : 'Пользователь'}, ID:${user.id}, тел: ${phone}). Функция loginUser() вернула success`, 'success');
+            addLog('🔑 Вход выполнен', `"${user.name}" (${user.isAdmin ? 'Администратор' : 'Пользователь'}, ID:${user.id}, тел: ${phone}). Вызвана loginUser()`, 'success');
             return { success: true, user }; 
         } 
-        addLog(`❌ ВХОД НЕУДАЧЕН: телефон "${phone}", пароль введён. Пользователь не найден. Функция loginUser() вернула ошибку`, 'error');
+        addLog('❌ Вход не удался', `Телефон: "${phone}", пользователь не найден или пароль неверен. loginUser() → ошибка`, 'error');
         return { success: false, message: 'Неверный номер телефона или пароль' }; 
     }
     
     function getCurrentUser() { 
-        const user = localStorage.getItem(CURRENT_USER_KEY); 
-        return user ? JSON.parse(user) : null; 
+        return localStorage.getItem(CURRENT_USER_KEY) ? JSON.parse(localStorage.getItem(CURRENT_USER_KEY)) : null; 
     }
     
     function logoutUser() { 
         const user = getCurrentUser();
         if (user) {
-            addLog(`🚪 ВЫХОД: пользователь "${user.name}" (ID:${user.id}) вышел. Функция logoutUser()`, 'info');
+            addLog('🚪 Выход из системы', `"${user.name}" (ID:${user.id}) вышел из аккаунта. Вызвана logoutUser()`, 'info');
         }
         localStorage.removeItem(CURRENT_USER_KEY); 
     }
@@ -1421,7 +1418,7 @@
     function acceptCookies() { 
         localStorage.setItem(COOKIES_ACCEPTED_KEY, 'true'); 
         document.getElementById('cookieConsent').classList.add('hidden'); 
-        addLog('🍪 COOKIE: пользователь принял использование cookie-файлов. Баннер скрыт. Функция acceptCookies()', 'info'); 
+        addLog('🍪 Cookie-файлы приняты', 'Пользователь согласился с использованием cookie. Баннер скрыт. Вызвана acceptCookies()', 'info'); 
         showToast('🍪 Спасибо! Cookie-файлы приняты.'); 
     }
     
@@ -1462,7 +1459,7 @@
         const navMyOrders = document.getElementById('navMyOrders');
         const navHistory = document.getElementById('navHistory');
         
-        addLog(`🔄 ОБНОВЛЕНИЕ ШАПКИ: функция updateHeader(). Пользователь: ${currentUser ? currentUser.name : 'не авторизован'}`, 'action');
+        addLog('Вызов updateHeader()', `Обновление шапки сайта. Пользователь: ${currentUser ? currentUser.name : 'не авторизован'}.`, 'action');
         
         if (currentUser) {
             const adminBtn = currentUser.isAdmin ? `<button class="header-btn" onclick="navigateTo('admin')" title="Админ-панель"><i class="fas fa-cog"></i> Админ</button>` : '';
@@ -1478,7 +1475,7 @@
     }
 
     function handleLogout() { 
-        addLog('🖱️ КЛИК: кнопка "Выйти" в шапке. Вызов handleLogout()', 'action');
+        addLog('Вызов handleLogout()', 'Нажата кнопка "Выйти". Выполняется выход из системы.', 'action');
         logoutUser(); 
         updateHeader(); 
         showToast('Вы вышли из аккаунта'); 
@@ -1497,55 +1494,54 @@
             'history': 'История заказов', 'about': 'О нас', 'support': 'Поддержка',
             'blog': 'Блог', 'auth': 'Авторизация', 'privacy': 'Конфиденциальность', 'admin': 'Админ-панель'
         };
-        addLog(`📄 НАВИГАЦИЯ: пользователь перешёл на страницу "${pageNames[page]||page}". Вызов navigateTo('${page}')`, 'action');
         
         switch (page) {
             case 'home': 
                 content.innerHTML = getHomePage(); 
                 if (navLinks[0]) navLinks[0].classList.add('active'); 
-                addLog('🏠 ГЛАВНАЯ: рендеринг главной страницы. Вызов getHomePage()', 'info');
+                addLog('Вызов navigateTo(\'home\') → getHomePage()', 'Переход на Главную. Рендеринг главной страницы.', 'action');
                 break;
             case 'catalog': 
                 content.innerHTML = getCatalogPage(); 
                 if (navLinks[1]) navLinks[1].classList.add('active'); 
-                addLog('📦 КАТАЛОГ: рендеринг страницы каталога. Вызов getCatalogPage()', 'info');
+                addLog('Вызов navigateTo(\'catalog\') → getCatalogPage()', 'Переход в Каталог. Рендеринг страницы каталога.', 'action');
                 break;
             case 'myorders': 
                 content.innerHTML = getMyOrdersPage(); 
                 if (navLinks[2]) navLinks[2].classList.add('active'); 
-                addLog('📋 МОИ ЗАКАЗЫ: рендеринг страницы. Вызов getMyOrdersPage()', 'info');
+                addLog('Вызов navigateTo(\'myorders\') → getMyOrdersPage()', 'Переход в Мои заказы. Рендеринг страницы.', 'action');
                 break;
             case 'history': 
                 content.innerHTML = getHistoryPage(); 
                 if (navLinks[3]) navLinks[3].classList.add('active'); 
-                addLog('📜 ИСТОРИЯ: рендеринг страницы истории заказов. Вызов getHistoryPage()', 'info');
+                addLog('Вызов navigateTo(\'history\') → getHistoryPage()', 'Переход в Историю заказов. Рендеринг страницы.', 'action');
                 break;
             case 'about': 
                 content.innerHTML = getAboutPage(); 
                 if (navLinks[4]) navLinks[4].classList.add('active'); 
-                addLog('ℹ️ О НАС: рендеринг страницы. Вызов getAboutPage()', 'info');
+                addLog('Вызов navigateTo(\'about\') → getAboutPage()', 'Переход в О нас. Рендеринг страницы с информацией о компании.', 'action');
                 break;
             case 'support': 
                 content.innerHTML = getSupportPage(); 
                 if (navLinks[5]) navLinks[5].classList.add('active'); 
-                addLog('🆘 ПОДДЕРЖКА: рендеринг страницы. Вызов getSupportPage()', 'info');
+                addLog('Вызов navigateTo(\'support\') → getSupportPage()', 'Переход в Поддержку. Рендеринг страницы поддержки.', 'action');
                 break;
             case 'blog': 
                 content.innerHTML = getBlogPage(); 
                 if (navLinks[6]) navLinks[6].classList.add('active'); 
-                addLog('📝 БЛОГ: рендеринг страницы. Вызов getBlogPage()', 'info');
+                addLog('Вызов navigateTo(\'blog\') → getBlogPage()', 'Переход в Блог. Рендеринг страницы блога.', 'action');
                 break;
             case 'auth': 
                 content.innerHTML = getAuthPage(); 
-                addLog('🔐 АВТОРИЗАЦИЯ: рендеринг страницы входа/регистрации. Вызов getAuthPage()', 'info');
+                addLog('Вызов navigateTo(\'auth\') → getAuthPage()', 'Переход на Авторизацию. Рендеринг страницы входа/регистрации.', 'action');
                 break;
             case 'privacy': 
                 content.innerHTML = getPrivacyPage(); 
-                addLog('📜 КОНФИДЕНЦИАЛЬНОСТЬ: рендеринг страницы. Вызов getPrivacyPage()', 'info');
+                addLog('Вызов navigateTo(\'privacy\') → getPrivacyPage()', 'Переход на Конфиденциальность. Рендеринг страницы политики.', 'action');
                 break;
             case 'admin': 
                 content.innerHTML = getAdminPage(); 
-                addLog('⚙️ АДМИН-ПАНЕЛЬ: рендеринг страницы. Вызов getAdminPage()', 'info');
+                addLog('Вызов navigateTo(\'admin\') → getAdminPage()', 'Переход в Админ-панель. Рендеринг страницы администратора.', 'action');
                 break;
         }
         window.scrollTo(0, 0);
@@ -1568,7 +1564,7 @@
         const totalAvailable = Object.values(availableCounts).reduce((sum, c) => sum + c, 0);
         const uniqueCategories = Object.keys(availableCounts).length;
         
-        addLog(`🏠 ГЛАВНАЯ: данные для отображения — доступно ${totalAvailable} ед. техники в ${uniqueCategories} категориях. Функция getHomePage()`, 'info');
+        addLog('Вызов getHomePage()', `Главная страница сформирована. Доступно: ${totalAvailable} ед. техники в ${uniqueCategories} категориях.`, 'info');
         
         return `<div class="hero-wrapper"><div class="container"><div class="hero"><div class="hero-content"><div class="hero-badge"><i class="fas fa-bicycle"></i> Активный отдых без границ</div><h1>Аренда снаряжения для любых приключений</h1><p>Велосипеды, байдарки, горное снаряжение и полный комплект для активного туризма.</p><div class="btn-group"><button class="btn-primary" onclick="navigateTo('catalog')"><i class="fas fa-list"></i> Каталог</button></div></div><div class="hero-stats"><div class="stats-grid"><div class="stat-item"><h3>${totalAvailable}+</h3><p>ед. техники</p></div><div class="stat-item"><h3>${uniqueCategories}</h3><p>категорий</p></div><div class="stat-item"><h3>7+</h3><p>лет работы</p></div><div class="stat-item"><h3>500+</h3><p>успешных заказов</p></div></div></div></div></div></div><div class="container" style="padding-top:30px;"><div class="section-title">🏕️ Топ-снаряжение для активного сезона</div><p style="margin-bottom:16px;color:#2c5a47;">Выберите инвентарь — от лёгких прогулок до экстремальных маршрутов</p><div class="equipment-grid" id="inventoryList">${invWithCounts.map(item => `<div class="equip-card" data-category-key="${item.key}"><div class="equip-icon"><i class="${item.icon}"></i></div><h3>${item.name}</h3><div class="equip-count">${item.availableCount} доступно</div><div class="equip-desc">${item.desc} (всего: ${item.totalCount})</div><div style="font-weight:700;color:#2d6a4f;">${item.price}</div></div>`).join('')}</div><div class="section-title">🧭 Каталог по видам спорта</div><div class="cat-grid" id="categoryGrid">${categories.slice(1,7).map(cat => `<div class="cat-item" data-cat-key="${cat.key}"><i class="fas ${cat.icon}"></i><h4>${cat.name}</h4><p>Выбрать</p></div>`).join('')}</div><div class="show-more-cats"><button class="btn-show-more" id="toggleMoreCats" onclick="toggleCategories()">Показать ещё категории</button></div></div>`;
     }
@@ -1579,7 +1575,7 @@
 
     function switchViewMode(mode) {
         catalogViewMode = mode;
-        addLog(`🔄 КАТАЛОГ: переключение режима отображения на "${mode}". Функция switchViewMode()`, 'action');
+        addLog('Вызов switchViewMode()', `Переключение режима каталога на "${mode}". Вызов renderCatalog('${currentFilter}').`, 'action');
         document.querySelectorAll('.view-toggle button').forEach(btn => btn.classList.remove('active'));
         const activeBtn = document.querySelector(`.view-toggle button .fa-${mode === 'grid' ? 'th' : 'list'}`);
         if (activeBtn) activeBtn.parentElement.classList.add('active');
@@ -1596,7 +1592,7 @@
         
         const totalAvailable = filtered.reduce((sum, i) => sum + i.available, 0);
         const totalItems = filtered.reduce((sum, i) => sum + i.total, 0);
-        addLog(`🔍 КАТАЛОГ: фильтр "${filterKey}" — показано ${filtered.length} товаров (доступно: ${totalAvailable} из ${totalItems}). Функция renderCatalog()`, 'action');
+        addLog('Вызов renderCatalog()', `Фильтр "${filterKey}" применён. Показано ${filtered.length} товаров (доступно: ${totalAvailable} из ${totalItems}).`, 'action');
         
         if (catalogViewMode === 'grid') {
             container.innerHTML = `<div class="equipment-grid">${filtered.map(item => renderCard(item, false)).join('')}</div>`;
@@ -1609,7 +1605,7 @@
                 e.stopPropagation(); 
                 e.preventDefault(); 
                 const itemId = parseInt(this.dataset.id);
-                addLog(`🖱️ КЛИК: кнопка "Арендовать" для товара ID:${itemId}. Вызов openBooking(${itemId})`, 'action');
+                addLog('Нажата кнопка "Арендовать"', `Товар ID:${itemId}. Вызов openBooking(${itemId}).`, 'action');
                 openBooking(itemId); 
             }); 
         }); 
@@ -1630,7 +1626,7 @@
             return bookingPhoneClean === userPhoneClean;
         });
         
-        addLog(`📋 МОИ ЗАКАЗЫ: пользователь "${currentUser.name}" (тел: ${userPhoneClean}), найдено ${bookings.length} бронирований`, 'info');
+        addLog('Вызов getMyOrdersPage()', `Мои заказы загружены. Пользователь: "${currentUser.name}" (тел: ${userPhoneClean}). Найдено ${bookings.length} бронирований.`, 'info');
         
         if (bookings.length === 0) return `<div class="container" style="padding:60px 0;text-align:center;"><i class="fas fa-clipboard-list" style="font-size:4rem;color:#ccc;"></i><h2 style="margin:20px 0;">Нет бронирований</h2><p style="margin-bottom:20px;">Вы ещё ничего не забронировали</p><button class="btn-primary" onclick="navigateTo('catalog')">Перейти в каталог</button></div>`;
         
@@ -1639,13 +1635,13 @@
 
     function getHistoryPage() { 
         const bookings = getBookings(); 
-        addLog(`📜 ИСТОРИЯ: загружено ${bookings.length} записей о заказах. Функция getHistoryPage()`, 'info');
+        addLog('Вызов getHistoryPage()', `История заказов загружена. Всего ${bookings.length} записей в базе.`, 'info');
         if (bookings.length === 0) return `<div class="container" style="padding:60px 0;text-align:center;"><i class="fas fa-history" style="font-size:4rem;color:#ccc;"></i><h2 style="margin:20px 0;">История пуста</h2><p style="margin-bottom:20px;">В системе пока нет заказов</p><button class="btn-primary" onclick="navigateTo('catalog')">Перейти в каталог</button></div>`; 
         return `<div class="container" style="padding:30px 0;"><h2>📜 История заказов</h2><table class="data-table"><thead><tr><th>Товар</th><th>Клиент</th><th>Телефон</th><th>Дата начала</th><th>Дата оконч.</th><th>Дней</th><th>Сумма</th><th>Статус</th></tr></thead><tbody>${bookings.map(b => `<tr><td><strong>${b.itemName}</strong></td><td>${b.customerName}</td><td>${b.customerPhone}</td><td>${b.startDate}</td><td>${b.endDate}</td><td>${b.days}</td><td>${b.totalPrice} ₽</td><td><span class="status-${b.status}">${b.status==='active'?'Активно':b.status==='pending-cancel'?'Ожидает отмены':b.status==='cancelled'?'Отменено':'Завершено'}</span></td></tr>`).join('')}</tbody></table></div>`; 
     }
 
     function getAboutPage() { 
-        addLog('ℹ️ О НАС: страница с информацией о компании. Адрес: Астрахань, 2-Зеленгинская, 1к2, кв. 70', 'info');
+        addLog('Вызов getAboutPage()', 'Страница "О нас" сформирована. Адрес: Астрахань, ул. 2-Зеленгинская, 1к2, кв. 70.', 'info');
         return `<div class="container info-page"><h2>О нас</h2><p style="font-size:1.1rem;margin-bottom:30px;">СпортАренда — команда профессионалов, влюблённых в активный образ жизни.</p><div class="info-card"><h3><i class="fas fa-users"></i> Наш коллектив</h3><p>Нас 25 человек: от инструкторов по водным видам до механиков велосипедов.</p></div><div class="info-card"><h3><i class="fas fa-clock"></i> Расписание работы</h3><p><strong>Пункты проката:</strong> ежедневно с 8:00 до 22:00</p></div><div class="info-card"><h3><i class="fas fa-map-marker-alt"></i> Пункты проката</h3><p><strong>Астрахань:</strong> ул. 2-Зеленгинская, 1к2, кв. 70</p></div></div>`; 
     }
     
@@ -1668,7 +1664,7 @@
     function getAdminPage() { 
         const currentUser = getCurrentUser();
         if (!currentUser || !currentUser.isAdmin) {
-            addLog('🚫 АДМИН-ПАНЕЛЬ: доступ запрещён (пользователь не администратор)', 'error');
+            addLog('Вызов getAdminPage()', 'Доступ в Админ-панель запрещён. Пользователь не является администратором.', 'error');
             return `<div class="container" style="padding:60px 0;text-align:center;"><i class="fas fa-shield-alt" style="font-size:4rem;color:#ccc;"></i><h2 style="margin:20px 0;">Доступ запрещён</h2><p style="margin-bottom:20px;">Только для администратора</p></div>`;
         }
         
@@ -1677,7 +1673,7 @@
         const iconOptions = availableIcons.map(ic => `<option value="${ic.class}">${ic.label} (${ic.class})</option>`).join(''); 
         const pendingCancellations = bookings.filter(b => b.status === 'pending-cancel');
         
-        addLog(`⚙️ АДМИН-ПАНЕЛЬ: ${inventory.length} товаров, ${bookings.length} заказов, ${pendingCancellations.length} ожидают отмены`, 'info');
+        addLog('Вызов getAdminPage()', `Админ-панель загружена. ${inventory.length} товаров, ${bookings.length} заказов, ${pendingCancellations.length} ожидают отмены.`, 'info');
         
         return `<div class="container" style="padding:30px 0;"><h2>⚙️ Админ-панель</h2>
         ${pendingCancellations.length > 0 ? `<div class="admin-panel" style="border-left: 4px solid var(--warning);"><h3><i class="fas fa-exclamation-triangle"></i> Ожидают подтверждения отмены (${pendingCancellations.length})</h3><table class="data-table"><thead><tr><th>ID</th><th>Товар</th><th>Клиент</th><th>Телефон</th><th>Даты</th><th>Сумма</th><th></th></tr></thead><tbody>${pendingCancellations.map(b => `<tr><td>#${b.id}</td><td>${b.itemName}</td><td>${b.customerName}</td><td>${b.customerPhone}</td><td>${b.startDate} → ${b.endDate}</td><td>${b.totalPrice} ₽</td><td><button class="btn-warning confirm-cancel-btn" data-id="${b.id}">Подтвердить отмену</button></td></tr>`).join('')}</tbody></table></div>` : ''}
@@ -1687,7 +1683,7 @@
     function openBooking(itemId) { 
         const item = getInventory().find(i => i.id === itemId); 
         if (!item || item.available <= 0) { 
-            addLog(`❌ БРОНИРОВАНИЕ: товар ID:${itemId} "${item?.name||'неизвестный'}" недоступен (available: ${item?.available||0}). Функция openBooking() прервана`, 'error');
+            addLog('Вызов openBooking()', `Товар "${item?.name||'неизвестный'}" (ID:${itemId}) недоступен. Бронирование невозможно.`, 'error');
             showToast('Товар недоступен', 'error'); 
             return; 
         } 
@@ -1707,7 +1703,6 @@
         const phoneField = document.getElementById('customerPhone');
         if (currentUser && currentUser.name) { 
             nameField.value = currentUser.name;
-            addLog(`👤 БРОНИРОВАНИЕ: авто-заполнение имени "${currentUser.name}" из профиля`, 'info');
             if (phoneField && currentUser.phone) {
                 const clean = currentUser.phone.replace(/\D/g, '');
                 if (clean.length === 11) {
@@ -1715,14 +1710,13 @@
                 } else {
                     phoneField.value = currentUser.phone;
                 }
-                addLog(`👤 БРОНИРОВАНИЕ: авто-заполнение телефона "${currentUser.phone}" из профиля`, 'info');
             }
         } else { 
             nameField.value = ''; 
         } 
         document.getElementById('totalPrice').textContent = '0 ₽'; 
         document.getElementById('daysCount').textContent = '0'; 
-        addLog(`📝 ФОРМА БРОНИРОВАНИЯ: открыта для "${item.name}" (ID:${itemId}, цена: ${item.price}₽/д, доступно: ${item.available} из ${item.total}). Мин. дата: ${today}`, 'action');
+        addLog('Вызов openBooking()', `Форма бронирования открыта. Товар: "${item.name}" (ID:${itemId}, цена: ${item.price}₽/д, доступно: ${item.available} из ${item.total}).`, 'action');
         openModal('bookingModal'); 
     }
 
@@ -1736,7 +1730,7 @@
                 const total = days * currentBookingItem.price;
                 document.getElementById('daysCount').textContent = days; 
                 document.getElementById('totalPrice').textContent = total.toLocaleString() + ' ₽'; 
-                addLog(`💰 РАСЧЁТ: ${days} дн. × ${currentBookingItem.price}₽ = ${total}₽. Функция calculatePrice()`, 'action');
+                addLog('Вызов calculatePrice()', `Расчёт стоимости: ${days} дн. × ${currentBookingItem.price}₽ = ${total}₽.`, 'action');
             } else { 
                 document.getElementById('daysCount').textContent = '0'; 
                 document.getElementById('totalPrice').textContent = '0 ₽'; 
@@ -1749,11 +1743,11 @@
         const phone = document.getElementById('customerPhone').value.trim(); 
         const start = document.getElementById('startDate').value; 
         const end = document.getElementById('endDate').value; 
-        if (!name) { showToast('Введите имя', 'error'); addLog('❌ БРОНИРОВАНИЕ: не указано имя клиента. Отправка прервана.', 'error'); return; } 
-        if (!phone || phone.replace(/\D/g, '').length < 11) { showToast('Введите полный номер телефона', 'error'); addLog('❌ БРОНИРОВАНИЕ: некорректный телефон. Отправка прервана.', 'error'); return; } 
-        if (!start || !end) { showToast('Выберите даты', 'error'); addLog('❌ БРОНИРОВАНИЕ: не выбраны даты. Отправка прервана.', 'error'); return; } 
+        if (!name) { showToast('Введите имя', 'error'); addLog('Вызов submitBooking()', 'Бронирование прервано. Не указано имя клиента.', 'error'); return; } 
+        if (!phone || phone.replace(/\D/g, '').length < 11) { showToast('Введите полный номер телефона', 'error'); addLog('Вызов submitBooking()', 'Бронирование прервано. Некорректный телефон.', 'error'); return; } 
+        if (!start || !end) { showToast('Выберите даты', 'error'); addLog('Вызов submitBooking()', 'Бронирование прервано. Не выбраны даты.', 'error'); return; } 
         const sd = new Date(start), ed = new Date(end); 
-        if (ed <= sd) { showToast('Дата окончания должна быть позже', 'error'); addLog('❌ БРОНИРОВАНИЕ: дата окончания раньше или равна дате начала. Отправка прервана.', 'error'); return; } 
+        if (ed <= sd) { showToast('Дата окончания должна быть позже', 'error'); addLog('Вызов submitBooking()', 'Бронирование прервано. Дата окончания раньше или равна дате начала.', 'error'); return; } 
         const days = Math.ceil((ed - sd) / (1000 * 60 * 60 * 24)); 
         const totalPrice = days * currentBookingItem.price; 
         const currentUser = getCurrentUser();
@@ -1769,7 +1763,7 @@
             comment: document.getElementById('comment').value.trim(),
             customerId: currentUser ? currentUser.id : null
         }; 
-        addLog(`📤 БРОНИРОВАНИЕ ОТПРАВЛЕНО: "${currentBookingItem.name}", клиент: ${name}, тел: ${phone}, ${start} → ${end} (${days} дн.), сумма: ${totalPrice}₽. Переход к оплате.`, 'success');
+        addLog('Вызов submitBooking() → showQRModal()', `Данные бронирования отправлены. "${currentBookingItem.name}", клиент: ${name}, тел: ${phone}, ${start} → ${end} (${days} дн.), сумма: ${totalPrice}₽.`, 'success');
         closeModal('bookingModal'); 
         showQRModal(totalPrice); 
     }
@@ -1787,20 +1781,19 @@
         simulateBtn.style.cursor = 'pointer';
         simulateBtn.style.background = '';
         new QRCode(document.getElementById('qrcode'), { text: `sportarenda://payment?order=pending&sum=${amount}`, width: 180, height: 180, colorDark: '#1a4a3a', colorLight: '#ffffff' }); 
-        addLog(`💳 QR-КОД: сгенерирован для суммы ${amount}₽. Открыто модальное окно оплаты.`, 'action');
+        addLog('Вызов showQRModal()', `QR-код сгенерирован. Сумма: ${amount}₽. Модальное окно оплаты открыто.`, 'action');
         openModal('qrModal'); 
         simulateBtn.onclick = function() { 
-            addLog('🖱️ КЛИК: кнопка "Оплатить (эмуляция)" в модальном окне QR-кода. Запуск скрипта эмуляции оплаты...', 'action');
+            addLog('Нажата кнопка "Оплатить (эмуляция)"', `Запуск скрипта эмуляции оплаты. Сумма: ${amount}₽. Ожидание 2 сек...`, 'action');
             simulateBtn.disabled = true;
             simulateBtn.textContent = '⏳ Обработка...';
             simulateBtn.style.opacity = '0.7';
             simulateBtn.style.cursor = 'not-allowed';
             document.getElementById('paymentStatus').textContent = '⏳ Обработка платежа...'; 
             document.getElementById('paymentStatus').style.color = '#f0ad4e';
-            addLog('💳 ПЛАТЁЖ: эмуляция обработки платежа через QR-код. Ожидание 2 секунды...', 'action');
             setTimeout(() => { 
                 if (pendingBookingData) { 
-                    addLog('💳 ПЛАТЁЖ: эмуляция завершена. Вызов addBooking() для создания заказа...', 'info');
+                    addLog('Эмуляция платежа завершена', 'Вызов addBooking() для создания заказа...', 'info');
                     const booking = addBooking(pendingBookingData); 
                     document.getElementById('paymentStatus').textContent = '✅ Оплата прошла успешно! Заказ #' + booking.id + ' оформлен.'; 
                     document.getElementById('paymentStatus').style.color = '#2d6a4f';
@@ -1810,35 +1803,35 @@
                     simulateBtn.style.background = '#ccc';
                     showToast('✅ Заказ #' + booking.id + ' успешно оформлен!'); 
                     pendingBookingData = null;
-                    addLog(`✅ ПЛАТЁЖ УСПЕШЕН: заказ #${booking.id} создан и оплачен. Кнопка деактивирована. Автозакрытие через 10 сек.`, 'success');
+                    addLog('Платёж успешен', `Заказ #${booking.id} создан и оплачен. Кнопка деактивирована. Автозакрытие окна через 10 сек.`, 'success');
                     
                     qrAutoCloseTimer = setTimeout(() => {
                         closeModal('qrModal');
-                        addLog('🔒 QR-ОКНО: автоматически закрыто через 10 секунд после успешной оплаты', 'info');
+                        addLog('QR-окно закрыто', 'Автоматическое закрытие через 10 секунд после успешной оплаты.', 'info');
                         qrAutoCloseTimer = null;
                     }, 10000);
                 } else {
-                    addLog('❌ ПЛАТЁЖ: pendingBookingData отсутствует. Платёж не может быть завершён.', 'error');
+                    addLog('Ошибка платежа', 'pendingBookingData отсутствует. Платёж не может быть завершён.', 'error');
                 }
             }, 2000); 
         }; 
     }
 
     function cancelBookingAction(bookingId) { 
-        addLog(`🖱️ КЛИК: кнопка "Отменить" для бронирования #${bookingId}. Запрос подтверждения у пользователя.`, 'action');
+        addLog('Вызов cancelBookingAction()', `Нажата кнопка "Отменить" для бронирования #${bookingId}.`, 'action');
         if (confirm('Отменить это бронирование? Отмена будет подтверждена администратором.')) { 
-            addLog(`⚠️ ОТМЕНА: пользователь подтвердил отмену бронирования #${bookingId}`, 'warning');
+            addLog('Пользователь подтвердил отмену', `Бронирование #${bookingId}. Вызов cancelBooking().`, 'warning');
             if (cancelBooking(bookingId)) { 
                 showToast('Запрос на отмену отправлен администратору'); 
                 navigateTo('myorders'); 
             } 
         } else {
-            addLog(`🔹 ОТМЕНА: пользователь отклонил отмену бронирования #${bookingId}`, 'action');
+            addLog('Отмена отклонена', `Пользователь отказался от отмены бронирования #${bookingId}.`, 'action');
         }
     }
 
     function confirmCancelAction(bookingId) {
-        addLog(`🖱️ АДМИН: кнопка "Подтвердить отмену" для бронирования #${bookingId}`, 'action');
+        addLog('Вызов confirmCancelAction()', `Админ: подтверждение отмены бронирования #${bookingId}.`, 'action');
         if (confirm('Подтвердить отмену бронирования #' + bookingId + '?')) {
             if (confirmCancelBooking(bookingId)) {
                 showToast('✅ Отмена бронирования подтверждена');
@@ -1854,15 +1847,15 @@
         const total = parseInt(document.getElementById('newItemCount')?.value) || 1; 
         const desc = document.getElementById('newItemDesc')?.value.trim() || 'Новый товар'; 
         const icon = document.getElementById('newItemIcon')?.value || 'fa-box'; 
-        if (!name || !price) { showToast('Заполните название и цену', 'error'); addLog('❌ АДМИН: добавление товара прервано — не заполнены поля', 'error'); return; } 
-        addLog(`🖱️ АДМИН: добавление товара "${name}", цена: ${price}₽, кат: ${category}, кол-во: ${total}`, 'action');
+        if (!name || !price) { showToast('Заполните название и цену', 'error'); addLog('Вызов addItemAction()', 'Добавление товара прервано. Не заполнены обязательные поля.', 'error'); return; } 
+        addLog('Вызов addItemAction() → addInventoryItem()', `Админ: добавление товара "${name}", цена: ${price}₽, кат: ${category}, кол-во: ${total}.`, 'action');
         addInventoryItem({ name, price, category, total, desc, icon }); 
         showToast('✅ Товар добавлен!'); 
         navigateTo('admin'); 
     }
 
     function deleteItemAction(id) { 
-        addLog(`🖱️ АДМИН: попытка удаления товара ID:${id}`, 'action');
+        addLog('Вызов deleteItemAction()', `Админ: удаление товара ID:${id}. Запрос подтверждения.`, 'action');
         if (confirm('Удалить товар #' + id + '?')) { 
             deleteInventoryItem(id); 
             showToast('Товар удалён'); 
@@ -1874,7 +1867,7 @@
         const addBtn = document.getElementById('addItemBtn');
         if (addBtn) {
             addBtn.addEventListener('click', () => {
-                addLog('🖱️ КЛИК: кнопка "Добавить товар" в админ-панели', 'action');
+                addLog('Нажата кнопка "Добавить товар"', 'Вызов addItemAction().', 'action');
                 addItemAction();
             });
         }
@@ -1892,11 +1885,11 @@
         if (loginForm.style.display === 'none') { 
             loginForm.style.display = 'block'; 
             registerForm.style.display = 'none'; 
-            addLog('🔄 АВТОРИЗАЦИЯ: переключение на форму входа', 'action');
+            addLog('Вызов toggleAuthForm()', 'Форма авторизации переключена. Активна форма входа.', 'action');
         } else { 
             loginForm.style.display = 'none'; 
             registerForm.style.display = 'block'; 
-            addLog('🔄 АВТОРИЗАЦИЯ: переключение на форму регистрации', 'action');
+            addLog('Вызов toggleAuthForm()', 'Форма авторизации переключена. Активна форма регистрации.', 'action');
         } 
     }
 
@@ -1906,16 +1899,16 @@
             const password = document.getElementById('loginPassword').value; 
             const errEl = document.getElementById('loginError'); 
             
-            addLog(`🖱️ КЛИК: кнопка "Войти". Телефон: "${phone}". Запуск скрипта авторизации loginUser()`, 'action');
+            addLog('Нажата кнопка "Войти"', `Телефон: "${phone}". Запуск скрипта авторизации loginUser().`, 'action');
             
-            if (!password) { errEl.textContent = 'Введите пароль'; errEl.classList.add('show'); addLog('❌ АВТОРИЗАЦИЯ: пароль не введён', 'error'); return; }
+            if (!password) { errEl.textContent = 'Введите пароль'; errEl.classList.add('show'); addLog('Авторизация: пароль не введён', '', 'error'); return; }
             
             if (password === 'Admin123' && (phone === '' || phone === '0' || phone === '0000000000' || phone === '7000000000' || phone === '70000000000')) {
                 phone = '0000000000';
-                addLog('🔑 АВТОРИЗАЦИЯ: обнаружен вход администратора по упрощённой схеме', 'info');
+                addLog('Обнаружен вход администратора', 'Упрощённая схема входа (Admin123). Телефон установлен: 0000000000.', 'info');
             }
             
-            if (!phone || phone.length < 10) { errEl.textContent = 'Введите номер телефона (минимум 10 цифр)'; errEl.classList.add('show'); addLog('❌ АВТОРИЗАЦИЯ: некорректный телефон', 'error'); return; } 
+            if (!phone || phone.length < 10) { errEl.textContent = 'Введите номер телефона (минимум 10 цифр)'; errEl.classList.add('show'); addLog('Авторизация: некорректный телефон', '', 'error'); return; } 
             
             const result = loginUser(phone, password); 
             if (result.success) { 
@@ -1933,10 +1926,10 @@
             const password = document.getElementById('regPassword').value; 
             const errEl = document.getElementById('regError'); 
             
-            addLog(`🖱️ КЛИК: кнопка "Зарегистрироваться". Имя: "${name}", тел: "${phone}". Запуск скрипта registerUser()`, 'action');
+            addLog('Нажата кнопка "Зарегистрироваться"', `Имя: "${name}", тел: "${phone}". Запуск скрипта registerUser().`, 'action');
             
-            if (!name || !phone || !password) { errEl.textContent = 'Заполните все поля'; errEl.classList.add('show'); addLog('❌ РЕГИСТРАЦИЯ: не все поля заполнены', 'error'); return; } 
-            if (!document.getElementById('agreeCheckbox').checked) { errEl.textContent = 'Необходимо согласие на обработку персональных данных'; errEl.classList.add('show'); addLog('❌ РЕГИСТРАЦИЯ: не отмечено согласие на обработку ПД', 'error'); return; } 
+            if (!name || !phone || !password) { errEl.textContent = 'Заполните все поля'; errEl.classList.add('show'); addLog('Регистрация: не все поля заполнены', '', 'error'); return; } 
+            if (!document.getElementById('agreeCheckbox').checked) { errEl.textContent = 'Необходимо согласие на обработку персональных данных'; errEl.classList.add('show'); addLog('Регистрация: согласие на ПД не отмечено', '', 'error'); return; } 
             if (name.length < 2) { errEl.textContent = 'Имя должно содержать минимум 2 символа'; errEl.classList.add('show'); return; } 
             if (phone.length < 11) { errEl.textContent = 'Введите полный номер телефона (11 цифр)'; errEl.classList.add('show'); return; } 
             if (password.length < 4) { errEl.textContent = 'Пароль должен быть не менее 4 символов'; errEl.classList.add('show'); return; } 
@@ -1971,7 +1964,7 @@
             card.addEventListener('click', () => { 
                 const article = blogArticles.find(a => a.id === parseInt(card.dataset.articleId)); 
                 if (article) { 
-                    addLog(`📖 БЛОГ: открыта статья "${article.title}" (ID:${article.id})`, 'action');
+                    addLog('Статья блога открыта', `"${article.title}" (ID:${article.id}). Вызов openModal('blogModal').`, 'action');
                     document.getElementById('blogModalContent').innerHTML = `<div style="background:linear-gradient(135deg,var(--primary-light),var(--primary));border-radius:20px;padding:40px;text-align:center;margin-bottom:20px;color:white;"><i class="fas ${article.icon}" style="font-size:3rem;"></i><h2 style="margin-top:12px;">${article.title}</h2><p>${article.date}</p></div><p style="font-size:1.1rem;line-height:1.8;">${article.content}</p>`; 
                     openModal('blogModal'); 
                 } 
@@ -1993,7 +1986,7 @@
             const catsToShow = expandedCats ? categories.slice(1) : categories.slice(1, 7); 
             grid.innerHTML = catsToShow.map(cat => `<div class="cat-item" data-cat-key="${cat.key}"><i class="fas ${cat.icon}"></i><h4>${cat.name}</h4><p>Выбрать</p></div>`).join(''); 
             btn.textContent = expandedCats ? 'Скрыть категории' : 'Показать ещё категории'; 
-            addLog(`🔄 КАТЕГОРИИ: ${expandedCats ? 'развёрнуты' : 'свёрнуты'} (показано ${catsToShow.length} из ${categories.length - 1})`, 'action');
+            addLog('Вызов toggleCategories()', `Категории ${expandedCats ? 'развёрнуты' : 'свёрнуты'} (показано ${catsToShow.length} из ${categories.length - 1}).`, 'action');
             initHomeHandlers(); 
         } 
     }
@@ -2003,7 +1996,7 @@
             el.addEventListener('click', () => { 
                 const key = el.dataset.catKey; 
                 if (key) { 
-                    addLog(`🖱️ КЛИК: категория "${key}" на главной. Переход в каталог с фильтром.`, 'action');
+                    addLog('Клик по категории', `"${key}" на главной. Переход в каталог с фильтром.`, 'action');
                     navigateTo('catalog'); 
                     setTimeout(() => renderCatalog(key), 300); 
                 } 
@@ -2013,7 +2006,7 @@
             card.addEventListener('click', () => { 
                 const key = card.dataset.categoryKey; 
                 if (key) { 
-                    addLog(`🖱️ КЛИК: карточка категории "${key}" на главной. Переход в каталог с фильтром.`, 'action');
+                    addLog('Клик по карточке категории', `"${key}" на главной. Переход в каталог с фильтром.`, 'action');
                     navigateTo('catalog'); 
                     setTimeout(() => renderCatalog(key), 300); 
                 } 
@@ -2023,7 +2016,7 @@
 
     function openModal(id) { 
         document.getElementById(id).classList.add('active'); 
-        addLog(`🔲 МОДАЛЬНОЕ ОКНО: открыто "${id}". Вызов openModal('${id}')`, 'action');
+        addLog('Вызов openModal()', `Модальное окно открыто. ID: "${id}".`, 'action');
     }
     
     function closeModal(id) { 
@@ -2031,7 +2024,7 @@
         if (id === 'qrModal') {
             if (qrAutoCloseTimer) { clearTimeout(qrAutoCloseTimer); qrAutoCloseTimer = null; }
         }
-        addLog(`🔒 МОДАЛЬНОЕ ОКНО: закрыто "${id}". Вызов closeModal('${id}')`, 'action');
+        addLog('Вызов closeModal()', `Модальное окно закрыто. ID: "${id}".`, 'action');
     }
 
     function showToast(msg, type = 'success') { 
@@ -2049,17 +2042,17 @@
     function handleSubscribe(emailInput) { 
         const email = emailInput.value.trim(); 
         const errorEl = document.getElementById('emailError'); 
-        addLog(`🖱️ ПОДПИСКА: попытка подписки с email "${email}". Вызов handleSubscribe()`, 'action');
+        addLog('Вызов handleSubscribe()', `Попытка подписки на рассылку. Email: "${email}".`, 'action');
         if (!email || !isValidEmail(email)) { 
             if (errorEl) errorEl.classList.add('show'); 
             emailInput.classList.add('error'); 
             showToast('Введите корректный email', 'error'); 
-            addLog('❌ ПОДПИСКА: некорректный email. Подписка отклонена.', 'error');
+            addLog('Подписка отклонена', 'Некорректный email адрес.', 'error');
             return; 
         } 
         if (errorEl) errorEl.classList.remove('show'); 
         emailInput.classList.remove('error'); 
-        addLog(`📩 ПОДПИСКА: email "${email}" успешно добавлен в рассылку`, 'success');
+        addLog('Подписка оформлена', `Email "${email}" добавлен в базу рассылки.`, 'success');
         showToast('📩 Подписка оформлена!'); 
         emailInput.value = ''; 
     }
@@ -2071,29 +2064,29 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        addLog('🚀 САЙТ ЗАГРУЖЕН: DOM полностью загружен. Инициализация всех компонентов...', 'info');
+        addLog('Сайт загружен', 'DOM полностью загружен. Начало инициализации всех компонентов...', 'info');
         if (isCookiesAccepted()) {
             document.getElementById('cookieConsent').classList.add('hidden');
-            addLog('🍪 COOKIE: ранее приняты, баннер скрыт', 'info');
+            addLog('Cookie уже приняты', 'Баннер скрыт при загрузке.', 'info');
         } else {
-            addLog('🍪 COOKIE: ещё не приняты, баннер отображается', 'info');
+            addLog('Cookie не приняты', 'Баннер отображается для пользователя.', 'info');
         }
         updateHeader();
         navigateTo('home');
         document.getElementById('subscribeBtn').addEventListener('click', () => {
-            addLog('🖱️ КЛИК: кнопка "Подписаться" в футере', 'action');
+            addLog('Нажата кнопка "Подписаться"', 'Вызов handleSubscribe().', 'action');
             handleSubscribe(document.getElementById('subsEmail'));
         });
         document.getElementById('subsEmail').addEventListener('input', function() { this.classList.remove('error'); document.getElementById('emailError')?.classList.remove('show'); });
         document.getElementById('startDate').addEventListener('change', calculatePrice);
         document.getElementById('endDate').addEventListener('change', calculatePrice);
         document.getElementById('submitBookingBtn').addEventListener('click', () => {
-            addLog('🖱️ КЛИК: кнопка "Перейти к оплате" в форме бронирования', 'action');
+            addLog('Нажата кнопка "Перейти к оплате"', 'Вызов submitBooking().', 'action');
             submitBooking();
         });
         setupPhoneMaskForBooking();
         document.querySelectorAll('.modal').forEach(modal => { modal.addEventListener('click', (e) => { if (e.target === modal) { modal.classList.remove('active'); if (modal.id === 'qrModal' && qrAutoCloseTimer) { clearTimeout(qrAutoCloseTimer); qrAutoCloseTimer = null; } } }); });
-        addLog('✅ ИНИЦИАЛИЗАЦИЯ ЗАВЕРШЕНА: все обработчики событий назначены', 'success');
+        addLog('Инициализация завершена', 'Все обработчики событий назначены, страница готова к работе.', 'success');
     });
 </script>
 </body>

@@ -2637,5 +2637,250 @@
         addLog('Инициализация завершена', 'Все обработчики событий назначены, страница готова к работе.', 'success');
     });
 </script>
+<div class="fixed-bottom-bar">
+    <a href="#" onclick="openSlideModal('modal1'); return false;">Слайд 1</a>
+    <a href="#" onclick="openSlideModal('modal2'); return false;">Слайд 2</a>
+    <a href="#" onclick="openSlideModal('modal3'); return false;">Слайд 3</a>
+    <a href="#" onclick="openSlideModal('modal4'); return false;">Слайд 4</a>
+    <a href="#" onclick="openSlideModal('modal5'); return false;">Слайд 5</a>
+    <a href="#" onclick="openSlideModal('modal6'); return false;">Слайд 6</a>
+    <a href="#" onclick="openSlideModal('modal7'); return false;">Слайд 7</a>
+    <a href="#" onclick="openSlideModal('modal8'); return false;">Слайд 8</a>
+    <a href="#" onclick="openSlideModal('modal9'); return false;">Слайд 9</a>
+    <a href="#" onclick="openSlideModal('modal10'); return false;">Слайд 10</a>
+    <a href="#" onclick="openSlideModal('modal11'); return false;">Слайд 11</a>
+    <a href="#" onclick="openSlideModal('modal12'); return false;">Слайд 12</a>
+    <a href="#" onclick="openSlideModal('modal13'); return false;">Слайд 13</a>
+</div>
+
+<!-- Модальные окна для слайдов -->
+<div id="modal1" class="slide-modal">
+    <div class="slide-modal-content">
+        <span class="slide-close-modal" onclick="closeSlideModal('modal1')">&times;</span>
+        <img src="slide1.PNG" alt="slide1">
+    </div>
+</div>
+
+<div id="modal2" class="slide-modal">
+    <div class="slide-modal-content">
+        <span class="slide-close-modal" onclick="closeSlideModal('modal2')">&times;</span>
+        <img src="slide2.PNG" alt="slide2">
+    </div>
+</div>
+
+<div id="modal3" class="slide-modal">
+    <div class="slide-modal-content">
+        <span class="slide-close-modal" onclick="closeSlideModal('modal3')">&times;</span>
+        <img src="slide3.PNG" alt="slide3">
+    </div>
+</div>
+
+<div id="modal4" class="slide-modal">
+    <div class="slide-modal-content">
+        <span class="slide-close-modal" onclick="closeSlideModal('modal4')">&times;</span>
+        <img src="slide4.PNG" alt="slide4">
+    </div>
+</div>
+
+<div id="modal5" class="slide-modal">
+    <div class="slide-modal-content">
+        <span class="slide-close-modal" onclick="closeSlideModal('modal5')">&times;</span>
+        <img src="slide5.PNG" alt="slide5">
+    </div>
+</div>
+
+<div id="modal6" class="slide-modal">
+    <div class="slide-modal-content">
+        <span class="slide-close-modal" onclick="closeSlideModal('modal6')">&times;</span>
+        <img src="slide6.PNG" alt="slide6">
+    </div>
+</div>
+
+<div id="modal7" class="slide-modal">
+    <div class="slide-modal-content">
+        <span class="slide-close-modal" onclick="closeSlideModal('modal7')">&times;</span>
+        <img src="slide7.PNG" alt="slide7">
+    </div>
+</div>
+
+<div id="modal8" class="slide-modal">
+    <div class="slide-modal-content">
+        <span class="slide-close-modal" onclick="closeSlideModal('modal8')">&times;</span>
+        <img src="slide8.PNG" alt="slide8">
+    </div>
+</div>
+
+<div id="modal9" class="slide-modal">
+    <div class="slide-modal-content">
+        <span class="slide-close-modal" onclick="closeSlideModal('modal9')">&times;</span>
+        <img src="slide9.PNG" alt="slide9">
+    </div>
+</div>
+
+<div id="modal10" class="slide-modal">
+    <div class="slide-modal-content">
+        <span class="slide-close-modal" onclick="closeSlideModal('modal10')">&times;</span>
+        <img src="slide10.PNG" alt="slide10">
+    </div>
+</div>
+
+<div id="modal11" class="slide-modal">
+    <div class="slide-modal-content">
+        <span class="slide-close-modal" onclick="closeSlideModal('modal11')">&times;</span>
+        <img src="slide11.PNG" alt="slide11">
+    </div>
+</div>
+
+<div id="modal12" class="slide-modal">
+    <div class="slide-modal-content">
+        <span class="slide-close-modal" onclick="closeSlideModal('modal12')">&times;</span>
+        <img src="slide12.PNG" alt="slide12">
+    </div>
+</div>
+
+<div id="modal13" class="slide-modal">
+    <div class="slide-modal-content">
+        <span class="slide-close-modal" onclick="closeSlideModal('modal13')">&times;</span>
+        <img src="slide13.PNG" alt="slide13">
+    </div>
+</div>
+
+<style>
+/* Фиксированная строка снизу */
+.fixed-bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #333;
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+}
+
+.fixed-bottom-bar a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+    text-align: center;
+}
+
+.fixed-bottom-bar a:hover {
+    background-color: #555;
+}
+
+/* Модальные окна для слайдов */
+.slide-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    animation: fadeIn 0.3s;
+}
+
+.slide-modal-content {
+    position: relative;
+    margin: 5% auto;
+    max-width: 90%;
+    width: 90%;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    animation: slideIn 0.3s;
+}
+
+.slide-modal-content img {
+    max-width: 100%;
+    max-height: 80vh;
+    height: auto;
+    border-radius: 4px;
+    object-fit: contain;
+}
+
+.slide-close-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.slide-close-modal:hover {
+    color: #000;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+</style>
+
+<script>
+// Функции для слайд-модалок (НЕ конфликтуют с основными)
+function openSlideModal(modalId) {
+    document.getElementById(modalId).style.display = 'block';
+}
+
+function closeSlideModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// Закрытие слайд-модалки при клике вне содержимого
+window.addEventListener('click', function(event) {
+    if (event.target.classList.contains('slide-modal')) {
+        event.target.style.display = 'none';
+    }
+});
+
+// Автоматическое создание пользователя для демонстрации
+(function() {
+    const USERS_KEY = 'sportArenaUsers_v9';
+    
+    let users = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+    
+    const phone = '79371234567';
+    const existingUser = users.find(u => u.phone === phone);
+    
+    if (!existingUser) {
+        const newUser = {
+            id: Date.now(),
+            name: 'Иван Лебедев',
+            phone: phone,
+            password: '4444',
+            createdAt: new Date().toISOString(),
+            isAdmin: false
+        };
+        
+        users.push(newUser);
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+        console.log('✅ Пользователь "Иван Лебедев" создан автоматически!');
+        console.log('   Телефон: +79371234567');
+        console.log('   Пароль: 4444');
+        console.log('   ID: ' + newUser.id);
+    } else {
+        console.log('ℹ️ Пользователь "Иван Лебедев" уже существует в базе.');
+    }
+})();   
+</script>
 </body>
 </html>

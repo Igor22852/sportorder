@@ -2098,16 +2098,7 @@
         addLog('Вызов getHomePage()', `Главная страница сформирована. Доступно: ${totalAvailable} ед. техники в ${uniqueCategories} категориях.`, 'info');
         
         return `<div class="hero-wrapper"><div class="container"><div class="hero"><div class="hero-content"><div class="hero-badge"><i class="fas fa-bicycle"></i> Активный отдых без границ</div><h1>Аренда снаряжения для любых приключений</h1><p>Велосипеды, байдарки, горное снаряжение и полный комплект для активного туризма.</p><div class="btn-group"><button class="btn-primary" onclick="navigateTo('catalog')"><i class="fas fa-list"></i> Каталог</button></div></div><div class="hero-stats"><div class="stats-grid"><div class="stat-item"><h3>${totalAvailable}+</h3><p>ед. техники</p></div><div class="stat-item"><h3>${uniqueCategories}</h3><p>категорий</p></div><div class="stat-item"><h3>7+</h3><p>лет работы</p></div><div class="stat-item"><h3>500+</h3><p>успешных заказов</p></div></div></div></div></div></div><div class="container" style="padding-top:30px;"><div class="section-title">🏕️ Топ-снаряжение для активного сезона</div><p style="margin-bottom:16px;color:#2c5a47;">Выберите инвентарь — от лёгких прогулок до экстремальных маршрутов</p><div class="equipment-grid" id="inventoryList">${invWithCounts.map(item => `<div class="equip-card" data-category-key="${item.key}"><div class="equip-icon"><i class="${item.icon}"></i></div><h3>${item.name}</h3><div class="equip-count">${item.availableCount} доступно</div><div class="equip-desc">${item.desc} (всего: ${item.totalCount})</div><div style="font-weight:700;color:#2d6a4f;">${item.price}</div></div>`).join('')}</div><div class="section-title">🧭 Каталог по видам спорта</div><div class="cat-grid" id="categoryGrid">${categories.slice(1,7).map(cat => `<div class="cat-item" data-cat-key="${cat.key}"><i class="fas ${cat.icon}"></i><h4>${cat.name}</h4><p>Выбрать</p></div>`).join('')}</div><div class="show-more-cats"><button class="btn-show-more" id="toggleMoreCats" onclick="toggleCategories()">Показать ещё категории</button></div>
-        <div class="source-code-section">
-            <h3><i class="fas fa-code"></i> Исходный код проекта</h3>
-            <p>Просмотр структуры и содержимого файлов веб-приложения</p>
-            <div class="source-btn-grid">
-                <button class="source-btn html-btn" onclick="showSourceCodeModal('html')"><i class="fab fa-html5"></i> HTML-код</button>
-                <button class="source-btn css-btn" onclick="showSourceCodeModal('css')"><i class="fab fa-css3-alt"></i> CSS-код</button>
-                <button class="source-btn js-btn" onclick="showSourceCodeModal('js')"><i class="fab fa-js-square"></i> JavaScript-код</button>
-                <button class="source-btn db-btn" onclick="showSourceCodeModal('db')"><i class="fas fa-database"></i> База данных (LocalStorage)</button>
-            </div>
-        </div>
+      
         </div>`;
     }
 
@@ -2852,6 +2843,7 @@ window.addEventListener('click', function(event) {
     }
 });
 
+
 // Автоматическое создание пользователя для демонстрации
 (function() {
     const USERS_KEY = 'sportArenaUsers_v9';
@@ -2881,6 +2873,7 @@ window.addEventListener('click', function(event) {
         console.log('ℹ️ Пользователь "Иван Лебедев" уже существует в базе.');
     }
 })();   
+
 </script>
 </body>
 </html>
